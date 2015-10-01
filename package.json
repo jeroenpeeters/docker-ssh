@@ -1,0 +1,15 @@
+{
+  "name": "docker-ssh",
+  "version": "1.0.0",
+  "description": "Provides SSH capabilities to any Docker container",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "GPL-2.0",
+  "dependencies": {
+    "coffee-script": "~1.10.0",
+    "ssh2": "~0.4.11"
+  }
+}
