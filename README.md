@@ -67,3 +67,9 @@ PORT      | 22       | server listens on this port
 
 # Container Requirements
 In order for Docker-SSH to function, the container for which to provide SSH needs to have *bash* installed and available on the path.
+
+# Credits
+I couldn't have created Docker-SSH without the following great Node packages! Many thanks go to the authors of:
+
+- [SSH2](https://github.com/mscdex/ssh2)
+- [PTY.js](https://github.com/chjj/pty.js)
