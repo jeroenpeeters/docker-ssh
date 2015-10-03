@@ -46,7 +46,30 @@ Now you can access the container through SSH by using your favorite client. The 
     /opt/nginx $
 
 # User Authentication
-Currently, no authentication is implemented. Authenticate to the SSH server with any user and password.
+Docker-SSH has support for multiple authentication mechanisms. The following
+table lists the implemented and planned authentication mechanisms
+
+AUTH_MECHANISM    | Implemented | Description
+------------------|-------------|--------------
+noAuth            | yes         | No authentication is performed, enter any user/password combination to logon
+simplePassword    | **no**      | Authenticate a predefined user/password, supports one user
+extendedPassword  | **no**      | Authenticate a user according to a predefined lists of users and passwords
+privateKey        | **no**      | Private key authentication
+
+## noAuth
+No authentication is performed. Any user/password combination is accepted by the server.
+Useful for testing, or in closed network environments such as corporate networks with separated VLAN's.
+This mechanism is nevertheless **discouraged** and should be used with care! The use of this
+authentication mechanism will create an error entry in the log.
+
+## simplePassword
+No yet implemented.
+
+## extendedPassword
+No yet implemented.
+
+## privateKey
+No yet implemented.
 
 # Server Identity and Security
 The SSH server needs an RSA/EC private key in order to secure the connection and identify itself to clients.
@@ -59,11 +82,12 @@ Arguments to Docker-SSH are passed as Docker environment variables. Docker-SSH n
 argument in order to know for which container to provide SSH. Mounting the Docker socket and Docker command into
 the SSH container is also mandatory since Docker-SSH internally uses *docker exec* to create a *bash* session.
 
-Argument  | Default  | Description
-----------|----------|------------------------------------------------------
-CONTAINER | None     | *name* or *id* of a running container
-KEYPATH   | ./id_rsa | path to a private key to use as server identity
-PORT      | 22       | server listens on this port
+Argument       | Default  | Description
+---------------|----------|------------------------------------------------------
+CONTAINER      | None     | *name* or *id* of a running container
+AUTH_MECHANISM | None     | name of the authentication mechanism, see [User Authentication](#user-authentication)
+KEYPATH        | ./id_rsa | path to a private key to use as server identity
+PORT           | 22       | server listens on this port
 
 # Container Requirements
 In order for Docker-SSH to function, the container for which to provide SSH needs to have *bash* installed and available on the path.
