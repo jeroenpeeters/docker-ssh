@@ -22,6 +22,9 @@ Let's assume you have a running container with name 'web-server1'. Run the follo
 The SSH server in this example is now running in its own container named 'sshd-web-server1' and exposes the SSH 
 service on port 2222.
 
+# User Authentication
+Currently, no authentication is implemented. Authenticate to the SSH server with any user and password.
+
 # Server Identity and Security
 The SSH server needs an RSA/EC private key in order to secure the connection and identify itself to clients.
 The Docker-SSH container comes with a default RSA key that will be used. If you want, you can provide your own
@@ -38,3 +41,6 @@ Argument  | Default  | Description
 CONTAINER | None     | *name* or *id* of a running container
 KEYPATH   | ./id_rsa | path to a private key to use as server identity
 PORT      | 22       | server listens on this port
+
+# Container Requirements
+In order for Docker-SSH to function, the container for which to provide SSH needs to have *bash* installed and available on the path.
