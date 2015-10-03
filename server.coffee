@@ -5,12 +5,15 @@ authenticationHandler = require './src/authenticationHandler'
 sessionHandler        = require './src/sessionHandler'
 
 port      = process.env.PORT or 22
-ip        = process.env.IP or '127.0.0.1'
-keypath   = process.env.KEYPATH or '~/.ssh/id_rsa'
+ip        = process.env.IP or '0.0.0.0'
+keypath   = process.env.KEYPATH
 container = process.env.CONTAINER
 
 unless container
   console.error 'No CONTAINER specified'
+  process.exit(1)
+unless keypath
+  console.error 'No KEYPATH specified'
   process.exit(1)
 
 options =
