@@ -5,9 +5,7 @@ SSH Server for Docker containers  ~ Because every container should be accessible
 Many reasons exist to SSH to a process running inside a container. As containers **SHOULD** be limited to run 
 one main/init process there is often no clean way to get access. One could of course SSH to a Docker host and 
 access the container with *docker exec*. Another way is to start an SSH server as a second process. Not only does
-this defeat the idea of one process per container, it is also a cumbersome approach when using images from the Docker
-Hub since they often don't contain an SSH server. Such an image needs to be changed and maintained in order to add
-SSH.
+this defeat the idea of one process per container, it is also a cumbersome approach when using images from the Docker Hub since they often don't (and shouldn't) contain an SSH server. 
 
 Docker-SSH adds SSH capabilities to any container in a compositional way. It implements an SSH server that transparently
 bridges the SSH session with docker exec. Currently the only requirement is that the container contains *bash*.
