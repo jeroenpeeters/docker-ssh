@@ -20,6 +20,7 @@ bridges the SSH session with docker exec. Currently the only requirement is that
 # Todo
 - Authenticate users by username and password
 - Authenticate users by username and public key
+- Customize the MOTD
 
 # Add SSH capabilities to any container!
 Let's assume you have a running container with name 'web-server1'. Run the following command to start Docker-SSH:
