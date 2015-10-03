@@ -4,6 +4,7 @@
   "description": "Provides SSH capabilities to any Docker container",
   "main": "index.js",
   "scripts": {
+    "start": "./node_modules/coffee-script/bin/coffee server.coffee",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
