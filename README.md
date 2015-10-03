@@ -26,6 +26,19 @@ Let's assume you have a running container with name 'web-server1'. Run the follo
 The SSH server in this example is now running in its own container named 'sshd-web-server1' and exposes the SSH 
 service on port 2222.
 
+Now you can access the container through SSH by using your favorite client. The output will look similar to
+
+    ssh someuser@localhost -p 2222
+    someuser@localhost's password: <PASSWORD>
+    
+    ###############################################################
+    ## Docker SSH ~ Because every container should be accessible ##
+    ###############################################################
+    ## container | web-server1                                   ##
+    ###############################################################
+    
+    /opt/nginx $ 
+
 # User Authentication
 Currently, no authentication is implemented. Authenticate to the SSH server with any user and password.
 
