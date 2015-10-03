@@ -10,6 +10,9 @@ RUN chmod +x ./node_modules/coffee-script/bin/coffee
 # Connect to container with name/id
 ENV CONTAINER=
 
+# Shell to use inside the container
+ENV CONTAINER_SHELL=bash
+
 # Server key
 ENV KEYPATH=./id_rsa
 

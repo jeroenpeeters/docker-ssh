@@ -10,7 +10,7 @@ header = (container) ->
   " ###############################################################\r\n" +
   "\r\n"
 
-module.exports = (container) ->
+module.exports = (container, shell) ->
 
   session = null
   channel = null
@@ -42,7 +42,7 @@ module.exports = (container) ->
       channel = accept()
       channel.write "#{header container}"
 
-      child = spawn 'script', ['/dev/null', '-qfc', "docker exec -ti #{container} bash"], stdio: 'pipe'
+      child = spawn 'script', ['/dev/null', '-qfc', "docker exec -ti #{container} #{shell}"], stdio: 'pipe'
       child.stdin.write 'export TERM=linux;\n'
       child.stdin.write 'export PS1="\\w $ ";\n\n'
 
@@ -58,17 +58,11 @@ module.exports = (container) ->
       child.stderr.on 'data', (err) ->
         channel.write err
 
-      #appender = ""
       forwardData = false
       setTimeout (-> forwardData = true; child.stdin.write '\n'), 500
       child.stdout.on 'data', (data) ->
         if forwardData
           channel.write data
-        #else
-        #  appender = "#{appender}#{data.toString()}"
-          #if appender.match /# export PS1="\\w \$ ";/ and !forwardData
-          #  forwardData = true
-          #  child.stdin.write '\n'
 
       channel.on 'data', (data) ->
         child.stdin.write data

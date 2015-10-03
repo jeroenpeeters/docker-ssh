@@ -8,6 +8,7 @@ port      = process.env.PORT or 22
 ip        = process.env.IP or '0.0.0.0'
 keypath   = process.env.KEYPATH
 container = process.env.CONTAINER
+shell     = process.env.CONTAINER_SHELL
 
 unless container
   console.error 'No CONTAINER specified'
@@ -15,13 +16,16 @@ unless container
 unless keypath
   console.error 'No KEYPATH specified'
   process.exit(1)
+unless shell
+  console.error 'No CONTAINER_SHELL specified'
+  process.exit(1)
 
 options =
   privateKey: fs.readFileSync keypath
 
 sshServer = new ssh2.Server options, (client) ->
 
-  sessHandler = sessionHandler container
+  sessHandler = sessionHandler container, shell
 
   client.on 'authentication', authenticationHandler
   client.on 'ready', -> client.on('session', sessHandler.handler)
