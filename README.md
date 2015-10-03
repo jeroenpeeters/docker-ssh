@@ -1,8 +1,7 @@
 # Docker-SSH
 SSH Server for Docker containers  ~ Because every container should be accessible
 
-- [Preamble](#preamble)
-- [Add SSH capabilities to any container!](#add-ssh--capabilities-to-any-container)
+- [Add SSH capabilities to any container!](#add-ssh-capabilities-to-any-container)
 - [User Authentication](#user-authentication)
 - [Server Identity and Security](#server-identity-and-security)
 - [Arguments](#arguments)
