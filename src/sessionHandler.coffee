@@ -1,4 +1,4 @@
-spawn = require('child_process').spawn
+pty = require 'pty'
 
 spaces = (text, length) ->(' ' for i in [0..length-text.length]).join ''
 header = (container) ->
@@ -14,16 +14,18 @@ module.exports = (container, shell) ->
 
   session = null
   channel = null
-  child = null
+  term = null
+  isClosing = false
 
   closeChannel = ->
     console.log 'Closing channel'
+    isClosing = true
     channel.end() if channel
-  stopChild = ->
-    console.log 'Stop Child'
-    child.kill 'SIGKILL' if child
+  stopTerm = ->
+    console.log 'Stop Term'
+    term.kill 'SIGKILL' if term
 
-  close: -> stopChild()
+  close: -> stopTerm()
   handler: (accept, reject) ->
     session = accept()
 
@@ -42,37 +44,41 @@ module.exports = (container, shell) ->
       channel = accept()
       channel.write "#{header container}"
 
-      child = spawn 'script', ['/dev/null', '-qfc', "docker exec -ti #{container} #{shell}"], stdio: 'pipe'
-      child.stdin.write 'export TERM=linux;\n'
-      child.stdin.write 'export PS1="\\w $ ";\n\n'
+      term = pty.spawn 'docker', ['exec', '-ti', container, shell], {
 
-      child.on 'exit', ->
-        console.log 'Child exit'
+      }
+      term.write 'export TERM=linux;\n'
+      term.write 'export PS1="\\w $ ";\n\n'
+
+      term.on 'exit', ->
+        console.log 'Term exit'
         closeChannel()
 
-      child.on 'error', (err) ->
-        console.log 'script error', "#{err}"
-        channel.write "Docker SSH encountered an error: #{err}"
+      term.on 'error', (err) ->
+        console.log 'term error', "#{err}"
+        #channel.write "Docker SSH encountered an error: #{err}\r\n" unless isClosing
         closeChannel()
-
-      child.stderr.on 'data', (err) ->
-        channel.write err
 
       forwardData = false
-      setTimeout (-> forwardData = true; child.stdin.write '\n'), 500
-      child.stdout.on 'data', (data) ->
+      setTimeout (-> forwardData = true; term.write '\n'), 500
+      term.on 'data', (data) ->
         if forwardData
           channel.write data
 
       channel.on 'data', (data) ->
-        child.stdin.write data
+        term.write data
 
       channel.on 'error', (e) ->
         console.log 'channel error', e
 
       channel.on 'exit', ->
         console.log 'channel exit'
-        stopChild()
+        stopTerm()
 
     session.on 'pty', (accept, reject, info) ->
       x = accept()
+
+    session.on 'window-change', (accept, reject, info) ->
+      console.log 'window-change', info
+      if term
+        term.resize info.cols, info.rows

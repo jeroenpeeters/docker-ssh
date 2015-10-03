@@ -11,6 +11,7 @@
   "license": "GPL-2.0",
   "dependencies": {
     "coffee-script": "~1.10.0",
+    "pty": "0.0.0",
     "ssh2": "~0.4.11"
   }
 }
