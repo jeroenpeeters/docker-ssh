@@ -25,7 +25,8 @@ bridges the SSH session with docker exec. Currently the only requirement is that
 # Add SSH capabilities to any container!
 Let's assume you have a running container with name 'web-server1'. Run the following command to start Docker-SSH:
 
-    docker run -ti --name sshd-web-server1 -e CONTAINER=web-server1 -p 2222:22 \
+    docker run -e CONTAINER=web-server1 -e AUTH_MECHANISM=noAuth \
+    --name sshd-web-server1 -p 2222:22  --rm \
     -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker \
     jeroenpeeters/docker-ssh
 
