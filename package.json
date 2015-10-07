@@ -12,6 +12,7 @@
   "dependencies": {
     "coffee-script": "~1.10.0",
     "pty": "0.0.0",
-    "ssh2": "~0.4.11"
+    "ssh2": "~0.4.11",
+    "express": "~4.13.3"
   }
 }

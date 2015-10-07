@@ -1,15 +1,20 @@
-fs    = require 'fs'
-ssh2  = require 'ssh2'
+fs        = require 'fs'
+ssh2      = require 'ssh2'
 
-sessionHandler        = require './src/sessionHandler'
+webserver       = require './src/webserver'
+sessionHandler  = require './src/sessionHandler'
 
-port            = process.env.PORT or 22
+sshPort         = process.env.PORT or 22
+httpPort        = process.env.HTTP_PORT or 80
+httpEnabled     = process.env.HTTP_ENABLED or true
 ip              = process.env.IP or '0.0.0.0'
 keypath         = process.env.KEYPATH
 container       = process.env.CONTAINER
 shell           = process.env.CONTAINER_SHELL
 authMechanism   = process.env.AUTH_MECHANISM
 authenticationHandler = require('./src/auth') authMechanism
+
+httpEnabled = httpEnabled == 'true' || httpEnabled == true
 
 exitOnConfigError = (errorMessage) ->
   console.error "Configuration error: #{errorMessage}"
@@ -34,5 +39,8 @@ sshServer = new ssh2.Server options, (client) ->
     console.log 'Client disconnected'
     sessHandler.close()
 
-sshServer.listen port, ip, ->
-  console.log "Docker SSH listening on #{@address().address}:#{@address().port}"
+sshServer.listen sshPort, ip, ->
+  console.log 'Docker-SSH ~ Because every container should be accessible'
+  console.log "SSH listening on #{@address().address}:#{@address().port}"
+
+  webserver.start httpPort if httpEnabled
