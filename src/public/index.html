@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html style="height:100%; !important;">
+<head>
+  <title>Docker-SSH</title>
+  <script src="/js/jquery-1.11.3.min.js"></script>
+  <script src="/term.js"></script>
+</head>
+<body>
+
+  <script type="text/javascript">
+    var robochick = "\r\n\r\nDocker-SSH Terminal\r\n\r\n \x1b[5C___//\r\n \x1b[4C/.__.\\\r\n \x1b[4C\\ \\/ /\r\n \x1b[1C'__/    \\\r\n \x1b[2C\\-      )\r\n \x1b[3C\\_____/\r\n _____|_|____\r\n \x1b[5C\" \"";
+    var connectionId, doneResizing, evt, term;
+    connectionId = null;
+    term = new Terminal({
+      cols: 80,
+      rows: 24,
+      useStyle: true,
+      screenKeys: true,
+      cursorBlink: true
+    });
+
+    $('html').css('cssText', 'height:100% !important;');
+    $('body').css('cssText', 'height:100% !important; background:none !important; background-color: #000 !important; padding: 0 10px 0 10px !important;');
+
+    evt = new EventSource("/api/v1/terminal/stream/");
+
+    evt.addEventListener('connectionId', function(event) {
+      connectionId = event.data;
+      return term.write("Connection established\r\n");
+    });
+
+    evt.addEventListener('data', function(event) {
+      console.log('data', event);
+      return term.write(JSON.parse(event.data));
+    });
+
+    evt.addEventListener('exit', function() {
+      evt.close();
+      return term.write("\r\nTerminal exited");
+    });
+
+    term.on('data', function(data) {
+      if (evt.readyState === EventSource.OPEN) {
+        $.post("/api/v1/terminal/send/" + connectionId, {data: data});
+      }
+    });
+
+    term.on('title', function(title) {
+      return document.title = title;
+    });
+
+    term.open(document.body);
+
+    term.write("\x1b[31m" + robochick + "\x1b[m\r\n");
+
+    window.onresize = function(event) {
+      clearTimeout(this.id);
+      return this.id = setTimeout(doneResizing, 500);
+    };
+
+    doneResizing = function() {
+      var cols, rows;
+      rows = Math.round($(window).height() / 15);
+      cols = Math.round($(window).width() / 7.5);
+      console.log($(window).height(), $(window).width());
+      console.log(rows, cols);
+      $.post("/api/v1/terminal/resize-window/" + connectionId, {cols: cols, rows: rows});
+    };
+  </script>
+
+</body>
+</html>
