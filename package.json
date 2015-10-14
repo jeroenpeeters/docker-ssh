@@ -16,6 +16,7 @@
     "express": "~4.13.3",
     "uuid": "~2.0.1",
     "body-parser": "~1.14.1",
-    "ssh2-connect": "0.0.7"
+    "ssh2-connect": "0.0.7",
+    "bunyan": "~1.5.1"
   }
 }

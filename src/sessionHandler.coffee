@@ -1,4 +1,6 @@
-pty = require 'pty'
+pty     = require 'pty'
+bunyan  = require 'bunyan'
+log     = bunyan.createLogger name: 'sessionHandler'
 
 spaces = (text, length) ->(' ' for i in [0..length-text.length]).join ''
 header = (container) ->
@@ -11,74 +13,74 @@ header = (container) ->
   "\r\n"
 
 module.exports = (container, shell) ->
+  x = ->
+    session = null
+    channel = null
+    term = null
+    isClosing = false
 
-  session = null
-  channel = null
-  term = null
-  isClosing = false
+    closeChannel = ->
+      log.info {container: container}, 'Closing channel'
+      isClosing = true
+      channel.end() if channel
+    stopTerm = ->
+      log.info {container: container}, 'Stop terminal'
+      term.kill 'SIGKILL' if term
 
-  closeChannel = ->
-    console.log 'Closing channel'
-    isClosing = true
-    channel.end() if channel
-  stopTerm = ->
-    console.log 'Stop Term'
-    term.kill 'SIGKILL' if term
+    close: -> stopTerm()
+    handler: (accept, reject) ->
+      session = accept()
 
-  close: -> stopTerm()
-  handler: (accept, reject) ->
-    session = accept()
+      session.once 'exec', (accept, reject, info) ->
+        console.log 'Client wants to execute: ' + info.command
+        stream = accept()
+        stream.stderr.write 'Oh no, the dreaded errors!\n'
+        stream.write 'Just kidding about the errors!\n'
+        stream.exit 0
+        stream.end()
 
-    session.once 'exec', (accept, reject, info) ->
-      console.log 'Client wants to execute: ' + info.command
-      stream = accept()
-      stream.stderr.write 'Oh no, the dreaded errors!\n'
-      stream.write 'Just kidding about the errors!\n'
-      stream.exit 0
-      stream.end()
+      session.on 'err', (err) ->
+        log.error {container: container}, err
 
-    session.on 'err', (err) ->
-      console.log 'session err', err
+      session.on 'shell', (accept, reject) ->
+        log.info {container: container}, 'Opening shell'
+        channel = accept()
+        channel.write "#{header container}"
 
-    session.on 'shell', (accept, reject) ->
-      channel = accept()
-      channel.write "#{header container}"
+        term = pty.spawn 'docker', ['exec', '-ti', container, shell], {}
+        term.write 'export TERM=linux;\n'
+        term.write 'export PS1="\\w $ ";\n\n'
 
-      term = pty.spawn 'docker', ['exec', '-ti', container, shell], {
+        term.on 'exit', ->
+          log.info {container: container}, 'Terminal exited'
+          closeChannel()
 
-      }
-      term.write 'export TERM=linux;\n'
-      term.write 'export PS1="\\w $ ";\n\n'
+        term.on 'error', (err) ->
+          log.error {container: container}, 'Terminal error', err
+          closeChannel()
 
-      term.on 'exit', ->
-        console.log 'Term exit'
-        closeChannel()
+        forwardData = false
+        setTimeout (-> forwardData = true; term.write '\n'), 500
+        term.on 'data', (data) ->
+          if forwardData
+            channel.write data
 
-      term.on 'error', (err) ->
-        console.log 'term error', "#{err}"
-        #channel.write "Docker SSH encountered an error: #{err}\r\n" unless isClosing
-        closeChannel()
+        channel.on 'data', (data) ->
+          term.write data
 
-      forwardData = false
-      setTimeout (-> forwardData = true; term.write '\n'), 500
-      term.on 'data', (data) ->
-        if forwardData
-          channel.write data
+        channel.on 'error', (e) ->
+          log.error {container: container}, 'Channel error', e
 
-      channel.on 'data', (data) ->
-        term.write data
+        channel.on 'exit', ->
+          log.info {container: container}, 'Channel exited'
+          stopTerm()
 
-      channel.on 'error', (e) ->
-        console.log 'channel error', e
+      session.on 'pty', (accept, reject, info) ->
+        x = accept()
 
-      channel.on 'exit', ->
-        console.log 'channel exit'
-        stopTerm()
+      session.on 'window-change', (accept, reject, info) ->
+        log.info {container: container}, 'window-change', info
+        if term
+          term.resize info.cols, info.rows
 
-    session.on 'pty', (accept, reject, info) ->
-      x = accept()
-
-    session.on 'window-change', (accept, reject, info) ->
-      console.log 'window-change', info
-      if term
-        term.resize info.cols, info.rows
+  x()

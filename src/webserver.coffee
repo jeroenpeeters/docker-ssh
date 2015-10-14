@@ -3,6 +3,9 @@ bodyParser  = require('body-parser')
 uuid        = require 'uuid'
 app         = express()
 
+bunyan      = require 'bunyan'
+webLog      = bunyan.createLogger name: 'webserver'
+
 module.exports =
 
   start: (port, sessionHandler) ->
@@ -34,17 +37,18 @@ module.exports =
           else addEventHandler connectionId, "session:#{event}", cb
 
     app.get '/api/v1/terminal/stream/', (req, res) ->
-      res.setHeader('Connection', 'Transfer-Encoding');
-      res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
-      res.setHeader('Transfer-Encoding', 'chunked');
       terminalId = uuid.v4()
-      res.write "event: connectionId\n"
+      webLog.info 'New terminal session', terminalId: terminalId
+      res.setHeader 'Connection', 'Transfer-Encoding'
+      res.setHeader 'Content-Type', 'text/event-stream; charset=utf-8'
+      res.setHeader 'Transfer-Encoding', 'chunked'
+      res.write 'event: connectionId\n'
       res.write "data: #{terminalId}\n\n"
       sessionHandler.handler webSession res, terminalId
 
       res.on 'close', ->
-        console.log 'res close'
-        eventHandlers[terminalId]['channel:close']()
+        console.log 'res close', eventHandlers[terminalId]
+        eventHandlers[terminalId]['channel:exit']()
 
     app.post '/api/v1/terminal/send/:terminalId', (req, res) ->
       terminalId = req.params.terminalId
@@ -67,4 +71,4 @@ module.exports =
     server = app.listen port, ->
       host = server.address().address
       port = server.address().port
-      console.log 'Web listening on http://%s:%s', host, port
+      webLog.info 'Listening', host: host, port: port
