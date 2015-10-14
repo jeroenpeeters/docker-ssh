@@ -3,70 +3,73 @@
 <head>
   <title>Docker-SSH</title>
   <script src="/js/jquery-1.11.3.min.js"></script>
-  <script src="/term.js"></script>
+  <script src="/js/term.js"></script>
+  <link rel="stylesheet" href="/css/term.css" type="text/css" />
 </head>
 <body>
 
   <script type="text/javascript">
-    var robochick = "\r\n\r\nDocker-SSH Terminal\r\n\r\n \x1b[5C___//\r\n \x1b[4C/.__.\\\r\n \x1b[4C\\ \\/ /\r\n \x1b[1C'__/    \\\r\n \x1b[2C\\-      )\r\n \x1b[3C\\_____/\r\n _____|_|____\r\n \x1b[5C\" \"";
+    computeMaxTerminalSize = function(){
+      rows = Math.round($(window).height() / 14);
+      cols = Math.round($(window).width() / 6.8);
+      return {cols: cols, rows: rows};
+    };
+
     var connectionId, doneResizing, evt, term;
     connectionId = null;
+    termSize = computeMaxTerminalSize()
     term = new Terminal({
-      cols: 80,
-      rows: 24,
+      cols: termSize.cols,
+      rows: termSize.rows,
       useStyle: true,
       screenKeys: true,
       cursorBlink: true
     });
 
-    $('html').css('cssText', 'height:100% !important;');
-    $('body').css('cssText', 'height:100% !important; background:none !important; background-color: #000 !important; padding: 0 10px 0 10px !important;');
-
     evt = new EventSource("/api/v1/terminal/stream/");
-
     evt.addEventListener('connectionId', function(event) {
       connectionId = event.data;
-      return term.write("Connection established\r\n");
+      term.write("Connection established\r\n");
+      doneResizing();
     });
-
     evt.addEventListener('data', function(event) {
       console.log('data', event);
-      return term.write(JSON.parse(event.data));
+      term.write(JSON.parse(event.data));
     });
-
     evt.addEventListener('exit', function() {
       evt.close();
-      return term.write("\r\nTerminal exited");
+      term.write("\r\nTerminal exited.");
     });
-
+    evt.addEventListener('error', function() {
+      evt.close();
+      term.write("\r\nTerminal exited.");
+    });
     term.on('data', function(data) {
       if (evt.readyState === EventSource.OPEN) {
         $.post("/api/v1/terminal/send/" + connectionId, {data: data});
       }
     });
-
     term.on('title', function(title) {
-      return document.title = title;
+      document.title = title;
     });
-
     term.open(document.body);
-
-    term.write("\x1b[31m" + robochick + "\x1b[m\r\n");
 
     window.onresize = function(event) {
       clearTimeout(this.id);
-      return this.id = setTimeout(doneResizing, 500);
+      this.id = setTimeout(doneResizing, 500);
     };
-
     doneResizing = function() {
-      var cols, rows;
-      rows = Math.round($(window).height() / 15);
-      cols = Math.round($(window).width() / 7.5);
-      console.log($(window).height(), $(window).width());
-      console.log(rows, cols);
-      $.post("/api/v1/terminal/resize-window/" + connectionId, {cols: cols, rows: rows});
+      maxTermSize = computeMaxTerminalSize();
+      $.post(
+        "/api/v1/terminal/resize-window/" + connectionId,
+        maxTermSize,
+        function(data){
+          if(data && data.cols && data.rows){
+            term.resize(data.cols, data.rows);
+          }
+        }
+      );
     };
   </script>
-
 </body>
 </html>
