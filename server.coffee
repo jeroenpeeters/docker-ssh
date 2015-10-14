@@ -1,5 +1,7 @@
 fs        = require 'fs'
 ssh2      = require 'ssh2'
+bunyan    = require 'bunyan'
+log       = bunyan.createLogger name: 'sshServer'
 
 webserver       = require './src/webserver'
 sessionHandler  = require './src/sessionHandler'
@@ -30,16 +32,16 @@ options =
   privateKey: fs.readFileSync keypath
 
 sessHandler = sessionHandler container, shell
-sshServer = new ssh2.Server options, (client) ->
-
+sshServer = new ssh2.Server options, (client, info) ->
+  log.info 'Client connected', clientIp: info.ip
   client.on 'authentication', authenticationHandler
   client.on 'ready', -> client.on('session', sessHandler.handler)
   client.on 'end', ->
-    console.log 'Client disconnected'
+    log.info 'Client disconnected', clientIp: info.ip
     sessHandler.close()
 
 sshServer.listen sshPort, ip, ->
-  console.log 'Docker-SSH ~ Because every container should be accessible'
-  console.log "SSH listening on #{@address().address}:#{@address().port}"
+  log.info 'Docker-SSH ~ Because every container should be accessible'
+  log.info 'Listening', host: @address().address, port: @address().port
 
   webserver.start httpPort, sessHandler if httpEnabled

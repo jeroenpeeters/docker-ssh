@@ -26,7 +26,7 @@ module.exports =
         on: (event, cb) ->
           addEventHandler connectionId, "channel:#{event}", cb
         end: ->
-          console.log 'websession end'
+          webLog.info 'Websession end', connectionId: connectionId
           delete eventHandlers[connectionId]
           res.end()
 
@@ -47,7 +47,6 @@ module.exports =
       sessionHandler.handler webSession res, terminalId
 
       res.on 'close', ->
-        console.log 'res close', eventHandlers[terminalId]
         eventHandlers[terminalId]['channel:exit']()
 
     app.post '/api/v1/terminal/send/:terminalId', (req, res) ->
@@ -56,7 +55,7 @@ module.exports =
       if eventHandlers[terminalId]['channel:data']
         eventHandlers[terminalId]['channel:data'] data
       else
-        console.error "No input handler for terminal #{terminalId}"
+        webLog.error 'No input handler for connection', connectionId: connectionId
       res.end()
 
     app.post '/api/v1/terminal/resize-window/:terminalId', (req, res) ->

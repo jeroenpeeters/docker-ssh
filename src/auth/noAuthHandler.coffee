@@ -1,4 +1,6 @@
+bunyan  = require 'bunyan'
+log     = bunyan.createLogger name: 'noAuthHandler'
 
 module.exports = (ctx) ->
-  console.warn 'NoAuthentication handler is handling the authentication! This is INSECURE!'
+  log.error 'NoAuthentication handler is handling the authentication! This is INSECURE!'
   ctx.accept()
