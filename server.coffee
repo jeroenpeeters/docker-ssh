@@ -31,8 +31,8 @@ exitOnConfigError "Unknown AUTH_MECHANISM: #{authMechanism}"  unless authenticat
 options =
   privateKey: fs.readFileSync keypath
 
-sessHandler = sessionHandler container, shell
 sshServer = new ssh2.Server options, (client, info) ->
+  sessHandler = sessionHandler container, shell
   log.info clientIp: info.ip, 'Client connected'
   client.on 'authentication', authenticationHandler
   client.on 'ready', -> client.on('session', sessHandler.handler)
@@ -44,4 +44,4 @@ sshServer.listen sshPort, ip, ->
   log.info 'Docker-SSH ~ Because every container should be accessible'
   log.info {host: @address().address, port: @address().port}, 'Listening'
 
-  webserver.start httpPort, sessHandler if httpEnabled
+  #webserver.start httpPort, sessHandler if httpEnabled
