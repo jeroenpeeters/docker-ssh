@@ -33,15 +33,15 @@ options =
 
 sessHandler = sessionHandler container, shell
 sshServer = new ssh2.Server options, (client, info) ->
-  log.info 'Client connected', clientIp: info.ip
+  log.info clientIp: info.ip, 'Client connected'
   client.on 'authentication', authenticationHandler
   client.on 'ready', -> client.on('session', sessHandler.handler)
   client.on 'end', ->
-    log.info 'Client disconnected', clientIp: info.ip
+    log.info clientIp: info.ip, 'Client disconnected'
     sessHandler.close()
 
 sshServer.listen sshPort, ip, ->
   log.info 'Docker-SSH ~ Because every container should be accessible'
-  log.info 'Listening', host: @address().address, port: @address().port
+  log.info {host: @address().address, port: @address().port}, 'Listening'
 
   webserver.start httpPort, sessHandler if httpEnabled

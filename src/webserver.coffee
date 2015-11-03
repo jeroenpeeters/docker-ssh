@@ -70,4 +70,4 @@ module.exports =
     server = app.listen port, ->
       host = server.address().address
       port = server.address().port
-      webLog.info 'Listening', host: host, port: port
+      webLog.info {host: host, port: port}, 'Listening'
