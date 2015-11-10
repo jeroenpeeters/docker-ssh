@@ -13,7 +13,7 @@ header = (container) ->
   "\r\n"
 
 module.exports = (container, shell) ->
-  x = ->
+  instance: ->
     session = null
     channel = null
     term = null
@@ -32,10 +32,10 @@ module.exports = (container, shell) ->
       session = accept()
 
       session.once 'exec', (accept, reject, info) ->
+        log.warn {container: container, command: info.command}, 'Client tried to execute a single command with ssh-exec. This is not (yet) supported by Docker-SSH.'
         console.log 'Client wants to execute: ' + info.command
         stream = accept()
-        stream.stderr.write 'Oh no, the dreaded errors!\n'
-        stream.write 'Just kidding about the errors!\n'
+        stream.stderr.write "'#{info.command}' is not (yet) supported by Docker-SSH\n"
         stream.exit 0
         stream.end()
 
@@ -82,5 +82,3 @@ module.exports = (container, shell) ->
         log.info {container: container}, 'window-change', info
         if term
           term.resize info.cols, info.rows
-
-  x()
