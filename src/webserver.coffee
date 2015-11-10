@@ -8,7 +8,7 @@ webLog      = bunyan.createLogger name: 'webserver'
 
 module.exports =
 
-  start: (port, sessionHandler) ->
+  start: (port, sessionFactory) ->
 
     app.use express.static 'src/public'
     app.use bodyParser.urlencoded extended: false
@@ -44,7 +44,7 @@ module.exports =
       res.setHeader 'Transfer-Encoding', 'chunked'
       res.write 'event: connectionId\n'
       res.write "data: #{terminalId}\n\n"
-      sessionHandler.handler webSession res, terminalId
+      sessionFactory.instance().handler webSession res, terminalId
 
       res.on 'close', ->
         eventHandlers[terminalId]['channel:exit']()

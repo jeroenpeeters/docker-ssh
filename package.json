@@ -4,19 +4,20 @@
   "description": "Provides SSH capabilities to any Docker container",
   "main": "index.js",
   "scripts": {
-    "start": "./node_modules/coffee-script/bin/coffee server.coffee",
+    "start": "./node_modules/forever/bin/forever -c ./node_modules/coffee-script/bin/coffee server.coffee | ./node_modules/bunyan/bin/bunyan",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "GPL-2.0",
   "dependencies": {
+    "body-parser": "~1.14.1",
+    "bunyan": "~1.5.1",
     "coffee-script": "~1.10.0",
+    "express": "~4.13.3",
+    "forever": "^0.15.1",
     "pty": "0.0.0",
     "ssh2": "~0.4.11",
-    "express": "~4.13.3",
-    "uuid": "~2.0.1",
-    "body-parser": "~1.14.1",
     "ssh2-connect": "0.0.7",
-    "bunyan": "~1.5.1"
+    "uuid": "~2.0.1"
   }
 }

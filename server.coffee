@@ -4,7 +4,7 @@ bunyan    = require 'bunyan'
 log       = bunyan.createLogger name: 'sshServer'
 
 webserver       = require './src/webserver'
-sessionHandler  = require './src/sessionHandler'
+handlerFactory  = require './src/session-handler-factory'
 
 sshPort         = process.env.PORT or 22
 httpPort        = process.env.HTTP_PORT or 80
@@ -31,17 +31,19 @@ exitOnConfigError "Unknown AUTH_MECHANISM: #{authMechanism}"  unless authenticat
 options =
   privateKey: fs.readFileSync keypath
 
+sessionFactory = handlerFactory container, shell
+
 sshServer = new ssh2.Server options, (client, info) ->
-  sessHandler = sessionHandler container, shell
+  session = sessionFactory.instance()
   log.info clientIp: info.ip, 'Client connected'
   client.on 'authentication', authenticationHandler
-  client.on 'ready', -> client.on('session', sessHandler.handler)
+  client.on 'ready', -> client.on('session', session.handler)
   client.on 'end', ->
     log.info clientIp: info.ip, 'Client disconnected'
-    sessHandler.close()
+    session.close()
 
 sshServer.listen sshPort, ip, ->
   log.info 'Docker-SSH ~ Because every container should be accessible'
   log.info {host: @address().address, port: @address().port}, 'Listening'
 
-  #webserver.start httpPort, sessHandler if httpEnabled
+webserver.start httpPort, sessionFactory if httpEnabled
