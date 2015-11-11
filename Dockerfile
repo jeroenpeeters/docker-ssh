@@ -20,4 +20,10 @@ ENV KEYPATH=./id_rsa
 # Server port
 ENV PORT=22
 
-EXPOSE 22
+# Enable web terminal
+ENV HTTP_ENABLED=true
+
+# HTTP Port
+ENV HTTP_PORT=8022
+
+EXPOSE 22 8022
