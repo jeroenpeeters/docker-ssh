@@ -67,6 +67,11 @@ Now you can access the container through SSH by using your favorite client. The 
 
 # Web terminal
 
+Docker-SSH also implements a web terminal for convenience. The web terminal allows you to connect to your shell using a browser. Below is a screenshot of the web terminal in action.
+
+![Docker-SSH Web Terminal](https://raw.githubusercontent.com/jeroenpeeters/docker-ssh/master/docker-web-terminal.png)
+
+The web terminal is enabled by default, and exposed on port 8022. To disable the web terminal set `-e HTTP_ENABLED=false`.
 
 # User Authentication
 Docker-SSH has support for multiple authentication mechanisms. The following
