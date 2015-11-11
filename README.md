@@ -15,6 +15,7 @@ Want to SSH into your container right away? Here you go:
 
 - [Todo](#todo)
 - [Add SSH capabilities to any container!](#add-ssh-capabilities-to-any-container)
+- [Web Terminal](#web-terminal)
 - [User Authentication](#user-authentication)
 - [Server Identity and Security](#server-identity-and-security)
 - [Arguments](#arguments)
