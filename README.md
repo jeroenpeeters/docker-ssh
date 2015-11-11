@@ -3,13 +3,13 @@ SSH Server for Docker containers  ~ Because every container should be accessible
 
 Want to SSH into your container right away? Here you go:
 
-    docker run -P 2222:22 \
+    docker run -p 2222:22 \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v $(which docker):/usr/bin/docker \
     -e CONTAINER=my-container -e AUTH_MECHANISM=noAuth \
      jeroenpeeters/docker-ssh
 
-     ssh -P 2222 localhost
+     ssh -p 2222 localhost
 
 # Index
 
