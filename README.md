@@ -1,5 +1,17 @@
 # Docker-SSH
-SSH Server for Docker containers  ~ Because every container should be accessible
+SSH Server for Docker containers  ~ Because every container should be accessible.
+
+Want to SSH into your container right away? Here you go:
+
+    docker run -P 2222:22 \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v $(which docker):/usr/bin/docker \
+    -e CONTAINER=my-container -e AUTH_MECHANISM=noAuth \
+     jeroenpeeters/docker-ssh
+
+     ssh -P 2222 localhost
+
+# Index
 
 - [Todo](#todo)
 - [Add SSH capabilities to any container!](#add-ssh-capabilities-to-any-container)
@@ -15,11 +27,18 @@ access the container with *docker exec*. Another way is to start an SSH server a
 this defeat the idea of one process per container, it is also a cumbersome approach when using images from the Docker Hub since they often don't (and shouldn't) contain an SSH server.
 
 Docker-SSH adds SSH capabilities to any container in a compositional way. It implements an SSH server that transparently
-bridges the SSH session with docker exec. Currently the only requirement is that the container contains *bash*.
+bridges the SSH session with docker exec. The requirements for this to function properly are:
+
+- The container has a shell environment installed (e.g. `bash` or `sh`)
+- The Docker command and docker socket are mapped into the container
 
 # Todo
+Below is a list of items which are currently on the roadmap. If you wish to contribute
+to this project, send me a message.
 - Authenticate users by username and password
 - Authenticate users by username and public key
+- Secure copy implementation (SCP)
+- Secure FTP implementation (SFTP)
 - Customize the MOTD
 
 # Add SSH capabilities to any container!
@@ -45,6 +64,9 @@ Now you can access the container through SSH by using your favorite client. The 
     ###############################################################
 
     /opt/nginx $
+
+# Web terminal
+
 
 # User Authentication
 Docker-SSH has support for multiple authentication mechanisms. The following
@@ -76,7 +98,8 @@ No yet implemented.
 The SSH server needs an RSA/EC private key in order to secure the connection and identify itself to clients.
 The Docker-SSH container comes with a default RSA key that will be used. If you want, you can provide your own
 key. Simply provide a key file as a volume to the container and set the *KEYPATH* argument of the container.
-Example: -v /path/to/my/key:/my_key -e KEYPATH=/my_key
+Example: `-v /path/to/my/key:/my_key -e KEYPATH=/my_key`. It is also possible to overwrite the existing key file.
+In that case you can omit the `KEYPATH` argument. Example: `-v /path/to/my/key:/usr/src/app/id_rsa.pub`
 
 # Arguments
 Arguments to Docker-SSH are passed as Docker environment variables. Docker-SSH needs at least the *CONTAINER*
@@ -86,12 +109,13 @@ the SSH container is also mandatory since Docker-SSH internally uses *docker exe
 Argument       | Default  | Description
 ---------------|----------|------------------------------------------------------
 CONTAINER      | None     | *name* or *id* of a running container
+CONTAINER_SHELL| bash     | path to a shell.
 AUTH_MECHANISM | None     | name of the authentication mechanism, see [User Authentication](#user-authentication)
 KEYPATH        | ./id_rsa | path to a private key to use as server identity
-PORT           | 22       | server listens on this port
+PORT           | 22       | ssh server listens on this port
+HTTP_ENABLED   | true     | enable/disable the web terminal
+HTTP_PORT      | 8022     | web terminal listens on this port
 
-# Container Requirements
-In order for Docker-SSH to function, the container for which to provide SSH needs to have *bash* installed and available on the path.
 
 # Credits
 I couldn't have created Docker-SSH without the following great Node packages! Many thanks go to the authors of:
