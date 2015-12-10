@@ -30,6 +30,7 @@ module.exports = (container, shell) ->
     close: -> stopTerm()
     handler: (accept, reject) ->
       session = accept()
+      termInfo = null
 
       session.once 'exec', (accept, reject, info) ->
         log.warn {container: container, command: info.command}, 'Client tried to execute a single command with ssh-exec. This is not (yet) supported by Docker-SSH.'
@@ -50,6 +51,7 @@ module.exports = (container, shell) ->
         term = pty.spawn 'docker', ['exec', '-ti', container, shell], {}
         term.write 'export TERM=linux;\n'
         term.write 'export PS1="\\w $ ";\n\n'
+        term.resize termInfo.cols, termInfo.rows if termInfo
 
         term.on 'exit', ->
           log.info {container: container}, 'Terminal exited'
@@ -77,8 +79,8 @@ module.exports = (container, shell) ->
 
       session.on 'pty', (accept, reject, info) ->
         x = accept()
+        termInfo = info
 
       session.on 'window-change', (accept, reject, info) ->
         log.info {container: container}, 'window-change', info
-        if term
-          term.resize info.cols, info.rows
+        term.resize info.cols, info.rows if term
