@@ -1,29 +1,20 @@
-FROM node:0.12-onbuild
+FROM node:0.12
 
-# Docker needs libapparmor
-RUN apt-get update
-RUN apt-get -yf install libapparmor-dev
-RUN ln -s /lib/x86_64-linux-gnu/libdevmapper.so.1.02.1 /lib/x86_64-linux-gnu/libdevmapper.so.1.02
+RUN apt-get update -qq \
+    && apt-get upgrade -y \
+    && apt-get install -y libapparmor-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# make coffee executable
-RUN chmod +x ./node_modules/coffee-script/bin/coffee
+RUN mkdir /app
+WORKDIR /app
 
-# Connect to container with name/id
-ENV CONTAINER=
+COPY id_rsa* *.json *.coffee ./
+COPY src /app/src
 
-# Shell to use inside the container
-ENV CONTAINER_SHELL=bash
+RUN npm install
 
-# Server key
-ENV KEYPATH=./id_rsa
-
-# Server port
-ENV PORT=22
-
-# Enable web terminal
-ENV HTTP_ENABLED=true
-
-# HTTP Port
-ENV HTTP_PORT=8022
+ENV CONTAINER= CONTAINER_SHELL=bash KEYPATH=./id_rsa PORT=22 HTTP_ENABLED=true HTTP_PORT=8022
 
 EXPOSE 22 8022
+
+CMD ["npm", "start"]
