@@ -8,7 +8,7 @@
 # DO NOT FORGET TO SET THE FOLLOWING PARAMS, ESPECIALLY `DOCKER_REGISTRY`.
 
 # Set either to your username on docker.io or to your private registry
-DOCKER_REGISTRY			= asperling
+DOCKER_REGISTRY			= jeroenpeeters
 IMAGE_TEMP_NAME			= build-docker-ssh
 IMAGE_FINAL_NAME		= docker-ssh
 
