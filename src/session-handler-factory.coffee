@@ -1,6 +1,8 @@
-pty     = require 'pty'
 bunyan  = require 'bunyan'
+Docker  = require 'dockerode'
 log     = bunyan.createLogger name: 'sessionHandler'
+
+docker  = new Docker socketPath: '/var/run/docker.sock'
 
 spaces = (text, length) ->(' ' for i in [0..length-text.length]).join ''
 header = (container) ->
@@ -16,16 +18,15 @@ module.exports = (container, shell) ->
   instance: ->
     session = null
     channel = null
-    term = null
-    isClosing = false
+    stream = null
+    resizeTerm = null
 
     closeChannel = ->
       log.info {container: container}, 'Closing channel'
-      isClosing = true
       channel.end() if channel
     stopTerm = ->
       log.info {container: container}, 'Stop terminal'
-      term.kill 'SIGKILL' if term
+      stream.end() if stream
 
     close: -> stopTerm()
     handler: (accept, reject) ->
@@ -48,34 +49,39 @@ module.exports = (container, shell) ->
         channel = accept()
         channel.write "#{header container}"
 
-        term = pty.spawn 'docker', ['exec', '-ti', container, shell], {}
-        term.write 'export TERM=linux;\n'
-        term.write 'export PS1="\\w $ ";\n\n'
-        term.resize termInfo.cols, termInfo.rows if termInfo
+        _container = docker.getContainer container
+        _container.exec {Cmd: [shell], AttachStdin: true, AttachStdout: true, Tty: true}, (err, exec) ->
+          exec.start {stdin: true, Tty: true}, (err, _stream) ->
+            stream = _stream
+            forwardData = false
+            setTimeout (-> forwardData = true; stream.write '\n'), 500
+            stream.on 'data', (data) ->
+              if forwardData
+                channel.write data.toString()
+            stream.on 'error', (err) ->
+              log.error {container: container}, 'Terminal error', err
+              closeChannel()
+            stream.on 'exit', (a,b,c) ->
+              log.info {container: container}, 'Terminal exited'
+              closeChannel()
+            stream.on 'end', ->
+              log.info {container: container}, 'Terminal exited'
+              closeChannel()
 
-        term.on 'exit', ->
-          log.info {container: container}, 'Terminal exited'
-          closeChannel()
+            stream.write 'export TERM=linux;\n'
+            stream.write 'export PS1="\\w $ ";\n\n'
 
-        term.on 'error', (err) ->
-          log.error {container: container}, 'Terminal error', err
-          closeChannel()
+            channel.on 'data', (data) ->
+              stream.write data
+            channel.on 'error', (e) ->
+              log.error {container: container}, 'Channel error', e
+            channel.on 'exit', ->
+              log.info {container: container}, 'Channel exited'
+              stopTerm()
 
-        forwardData = false
-        setTimeout (-> forwardData = true; term.write '\n'), 500
-        term.on 'data', (data) ->
-          if forwardData
-            channel.write data
-
-        channel.on 'data', (data) ->
-          term.write data
-
-        channel.on 'error', (e) ->
-          log.error {container: container}, 'Channel error', e
-
-        channel.on 'exit', ->
-          log.info {container: container}, 'Channel exited'
-          stopTerm()
+            resizeTerm = (termInfo) ->
+              if termInfo then exec.resize {h: termInfo.rows, w: termInfo.cols}, -> undefined
+            resizeTerm termInfo # initially set the current size of the terminal
 
       session.on 'pty', (accept, reject, info) ->
         x = accept()
@@ -83,4 +89,4 @@ module.exports = (container, shell) ->
 
       session.on 'window-change', (accept, reject, info) ->
         log.info {container: container}, 'window-change', info
-        term.resize info.cols, info.rows if term
+        resizeTerm info
