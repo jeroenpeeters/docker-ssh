@@ -1,9 +1,12 @@
-FROM node:0.12-onbuild
+FROM gliderlabs/alpine
 
-# Docker needs libapparmor
-RUN apt-get update
-RUN apt-get -yf install libapparmor-dev
-RUN ln -s /lib/x86_64-linux-gnu/libdevmapper.so.1.02.1 /lib/x86_64-linux-gnu/libdevmapper.so.1.02
+WORKDIR /src
+ADD . .
+
+RUN apk --update add docker python make g++ nodejs; \
+  npm install; \
+  apk del make gcc g++ python && rm -rf /tmp/* /var/cache/apk/* /root/.npm /root/.node-gyp;
+
 
 # make coffee executable
 RUN chmod +x ./node_modules/coffee-script/bin/coffee
@@ -27,3 +30,5 @@ ENV HTTP_ENABLED=true
 ENV HTTP_PORT=8022
 
 EXPOSE 22 8022
+
+CMD ["npm", "start"]
