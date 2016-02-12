@@ -3,13 +3,12 @@ SSH Server for Docker containers  ~ Because every container should be accessible
 
 Want to SSH into your container right away? Here you go:
 
-    docker run -p 2222:22 \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    -v $(which docker):/usr/bin/docker \
-    -e CONTAINER=my-container -e AUTH_MECHANISM=noAuth \
-     jeroenpeeters/docker-ssh
+    $ docker run -d -p 2222:22 \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -e CONTAINER=my-container -e AUTH_MECHANISM=noAuth \
+      jeroenpeeters/docker-ssh
 
-     ssh -p 2222 localhost
+    $ ssh -p 2222 localhost
 
 # Index
 
@@ -31,8 +30,8 @@ this defeat the idea of one process per container, it is also a cumbersome appro
 Docker-SSH adds SSH capabilities to any container in a compositional way. It implements an SSH server that transparently
 bridges the SSH session with docker exec. The requirements for this to function properly are:
 
-- The container has a shell environment installed (e.g. `bash` or `sh`)
-- The Docker command and docker socket are mapped into the container
+- The container has a shell environment installed (e.g. `bash` or `sh`).
+- The Docker socket is mapped into the container, this lets the container access the Docker Engine.
 
 # Todo
 Below is a list of items which are currently on the roadmap. If you wish to contribute
@@ -47,9 +46,9 @@ to this project, send me a message.
 Let's assume you have a running container with name 'web-server1'. Run the following command to start Docker-SSH:
 
     docker run -e CONTAINER=web-server1 -e AUTH_MECHANISM=noAuth \
-    --name sshd-web-server1 -p 2222:22  --rm \
-    -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker \
-    jeroenpeeters/docker-ssh
+      --name sshd-web-server1 -p 2222:22  --rm \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      jeroenpeeters/docker-ssh
 
 The SSH server in this example is now running in its own container named 'sshd-web-server1' and exposes the SSH
 service on port 2222.
@@ -110,8 +109,7 @@ In that case you can omit the `KEYPATH` argument. Example: `-v /path/to/my/key:/
 
 # Arguments
 Arguments to Docker-SSH are passed as Docker environment variables. Docker-SSH needs at least the *CONTAINER*
-argument in order to know for which container to provide SSH. Mounting the Docker socket and Docker command into
-the SSH container is also mandatory since Docker-SSH internally uses *docker exec* to create a *bash* session.
+argument in order to know for which container to provide SSH. Mounting the Docker socket into the SSH container is mandatory since Docker-SSH internally uses *docker exec* to create a shell session.
 
 Argument       | Default  | Description
 ---------------|----------|------------------------------------------------------
