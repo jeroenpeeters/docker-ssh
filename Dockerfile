@@ -3,9 +3,10 @@ FROM gliderlabs/alpine
 WORKDIR /src
 ADD . .
 
-RUN apk --update add docker python make g++ nodejs; \
-  npm install; \
-  apk del make gcc g++ python && rm -rf /tmp/* /var/cache/apk/* /root/.npm /root/.node-gyp;
+RUN apk --update add docker python make g++ nodejs \
+  && npm install \
+  && apk del make gcc g++ python \
+  && rm -rf /tmp/* /var/cache/apk/* /root/.npm /root/.node-gyp
 
 
 # make coffee executable
