@@ -1,4 +1,5 @@
-./docker-ssh.png
-.git
-build
-node_modules
+*.png
+.git/
+bin/
+build/
+node_modules/
