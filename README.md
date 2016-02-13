@@ -121,16 +121,6 @@ PORT           | 22       | ssh server listens on this port
 HTTP_ENABLED   | true     | enable/disable the web terminal
 HTTP_PORT      | 8022     | web terminal listens on this port
 
-# Troubleshooting
-
-## Connection gets closed immediately
-
-You made sure the target container has a shell and all other settings are fine but after trying to connect via SSH the connection gets closed instantly. If that's the case you might want to mount the device mapper lib too:
-
-`-v /lib/x86_64-linux-gnu/libdevmapper.so.1.02.1:/lib/x86_64-linux-gnu/libdevmapper.so.1.02.1`
-
-The location of that lib depends on your host system, so you need to adjust the path accordingly.
-
 # Credits
 I couldn't have created Docker-SSH without the following great Node packages! Many thanks go to the authors of:
 
