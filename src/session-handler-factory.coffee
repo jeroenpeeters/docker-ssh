@@ -22,10 +22,8 @@ module.exports = (container, shell) ->
     resizeTerm = null
 
     closeChannel = ->
-      log.info {container: container}, 'Closing channel'
       channel.end() if channel
     stopTerm = ->
-      log.info {container: container}, 'Stop terminal'
       stream.end() if stream
 
     close: -> stopTerm()
@@ -34,12 +32,27 @@ module.exports = (container, shell) ->
       termInfo = null
 
       session.once 'exec', (accept, reject, info) ->
-        log.warn {container: container, command: info.command}, 'Client tried to execute a single command with ssh-exec. This is not (yet) supported by Docker-SSH.'
-        console.log 'Client wants to execute: ' + info.command
-        stream = accept()
-        stream.stderr.write "'#{info.command}' is not (yet) supported by Docker-SSH\n"
-        stream.exit 0
-        stream.end()
+        log.info {container: container, command: info.command}, 'Exec'
+        channel = accept()
+        _container = docker.getContainer container
+        _container.exec {Cmd: [shell, '-c', info.command], AttachStdin: true, AttachStdout: true, Tty: true}, (err, exec) ->
+          exec.start {stdin: true, Tty: true}, (err, _stream) ->
+            stream = _stream
+            stream.on 'data', (data) ->
+              channel.write data.toString()
+            stream.on 'error', (err) ->
+              log.error {container: container}, 'Exec error', err
+              closeChannel()
+            stream.on 'end', ->
+              log.info {container: container}, 'Exec ended'
+              closeChannel()
+            channel.on 'data', (data) ->
+              stream.write data
+            channel.on 'error', (e) ->
+              log.error {container: container}, 'Channel error', e
+            channel.on 'end', ->
+              log.info {container: container}, 'Channel exited'
+              stopTerm()
 
       session.on 'err', (err) ->
         log.error {container: container}, err
@@ -61,9 +74,6 @@ module.exports = (container, shell) ->
             stream.on 'error', (err) ->
               log.error {container: container}, 'Terminal error', err
               closeChannel()
-            stream.on 'exit', (a,b,c) ->
-              log.info {container: container}, 'Terminal exited'
-              closeChannel()
             stream.on 'end', ->
               log.info {container: container}, 'Terminal exited'
               closeChannel()
@@ -75,7 +85,7 @@ module.exports = (container, shell) ->
               stream.write data
             channel.on 'error', (e) ->
               log.error {container: container}, 'Channel error', e
-            channel.on 'exit', ->
+            channel.on 'end', ->
               log.info {container: container}, 'Channel exited'
               stopTerm()
 
