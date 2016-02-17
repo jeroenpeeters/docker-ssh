@@ -3,3 +3,7 @@
 bin/
 build/
 node_modules/
+run-dev.sh
+*.md
+Makefile
+id_rsa.pub
