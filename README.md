@@ -38,7 +38,7 @@ bridges the SSH session with docker exec. The requirements for this to function 
 - The Docker socket is mapped into the container, this lets the container access the Docker Engine.
 
 # Features & Todo
-Below is a list of both implemented features and planned featured. Send me a
+Below is a list of both implemented features and planned features. Send me a
 message if you whish to contribute to this project.
 - [x] Interactive shell
 - [x] Execute single command
