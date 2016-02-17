@@ -12,7 +12,7 @@ Want to SSH into your container right away? Here you go:
 
 # Index
 
-- [Todo](#todo)
+- [Features & Todo](#featurestodo)
 - [Add SSH capabilities to any container!](#add-ssh-capabilities-to-any-container)
 - [Web Terminal](#web-terminal)
 - [User Authentication](#user-authentication)
@@ -33,14 +33,18 @@ bridges the SSH session with docker exec. The requirements for this to function 
 - The container has a shell environment installed (e.g. `bash` or `sh`).
 - The Docker socket is mapped into the container, this lets the container access the Docker Engine.
 
-# Todo
-Below is a list of items which are currently on the roadmap. If you wish to contribute
-to this project, send me a message.
-- Authenticate users by username and password
-- Authenticate users by username and public key
-- Secure copy implementation (SCP)
-- Secure FTP implementation (SFTP)
-- Customize the MOTD
+# Features & Todo
+Below is a list of both implemented features and planned featured. Send me a
+message if you whish to contribute to this project.
+- [x] Interactive shell
+- [x] Execute single command
+- [x] HTTP API
+- [x] Web terminal
+- [ ] Customize the MOTD
+- [ ] Authenticate users by username and password
+- [ ] Authenticate users by username and public key
+- [ ] Secure copy implementation (SCP)
+- [ ] Secure FTP implementation (SFTP)
 
 # Add SSH capabilities to any container!
 Let's assume you have a running container with name 'web-server1'. Run the following command to start Docker-SSH:
