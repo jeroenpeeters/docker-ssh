@@ -47,7 +47,7 @@ module.exports =
       sessionFactory.instance().handler webSession res, terminalId
 
       res.on 'close', ->
-        eventHandlers[terminalId]['channel:exit']()
+        eventHandlers[terminalId]['channel:end']()
 
     app.post '/api/v1/terminal/send/:terminalId', (req, res) ->
       terminalId = req.params.terminalId
