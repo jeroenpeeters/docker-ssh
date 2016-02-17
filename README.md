@@ -10,9 +10,13 @@ Want to SSH into your container right away? Here you go:
 
     $ ssh -p 2222 localhost
 
+## What is it?
+Docker-SSH is an SSH server implementation that transparently bridges `docker exec`
+with the SSH session. It implements a regular SSH server, a web terminal and a web API.
+
 # Index
 
-- [Features & Todo](#featurestodo)
+- [Features & Todo](#features--todo)
 - [Add SSH capabilities to any container!](#add-ssh-capabilities-to-any-container)
 - [Web Terminal](#web-terminal)
 - [User Authentication](#user-authentication)
