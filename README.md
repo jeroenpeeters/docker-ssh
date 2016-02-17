@@ -100,7 +100,7 @@ terminal session. It must be a post request that does a form submit with a `data
     curl -X POST http://localhost:8022/api/v1/terminal/send/122dbd35-d51d-4bc3-80c8-787d82370bee -d $'data=ls -al\n'
 
 ## Resizing a terminalId
-The terminal can be resized by posting to endpoint `/api/v1/terminal/resize-window/:terminalId`. The endpoint accepts two paramters, rows and cols.
+The terminal can be resized by posting to endpoint `/api/v1/terminal/resize-window/:terminalId`. The endpoint accepts two parameters, rows and cols.
 
     curl -X POST http://localhost:8022/api/v1/terminal/resize-window/2aaff6d2-b0e9-4e42-99c3-a80474b1c32f -d 'rows=10&cols=20'
 
