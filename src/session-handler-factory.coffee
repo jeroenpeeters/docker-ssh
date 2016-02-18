@@ -20,8 +20,10 @@ module.exports = (container, shell) ->
     channel = null
     stream = null
     resizeTerm = null
+    session = null
 
     closeChannel = ->
+      channel.exit(0) if channel
       channel.end() if channel
     stopTerm = ->
       stream.end() if stream
@@ -35,7 +37,7 @@ module.exports = (container, shell) ->
         log.info {container: container, command: info.command}, 'Exec'
         channel = accept()
         _container = docker.getContainer container
-        _container.exec {Cmd: [shell, '-c', info.command], AttachStdin: true, AttachStdout: true, Tty: true}, (err, exec) ->
+        _container.exec {Cmd: [shell, '-c', info.command], AttachStdin: true, AttachStdout: true, AttachStderr: true, Tty: true}, (err, exec) ->
           exec.start {stdin: true, Tty: true}, (err, _stream) ->
             stream = _stream
             stream.on 'data', (data) ->
