@@ -37,7 +37,7 @@ module.exports = (container, shell) ->
         log.info {container: container, command: info.command}, 'Exec'
         channel = accept()
         _container = docker.getContainer container
-        _container.exec {Cmd: [shell, '-c', info.command], AttachStdin: true, AttachStdout: true, AttachStderr: true, Tty: true}, (err, exec) ->
+        _container.exec {Cmd: [shell, '-c', info.command], AttachStdin: true, AttachStdout: true, AttachStderr: true, Tty: false}, (err, exec) ->
           exec.start {stdin: true, Tty: true}, (err, _stream) ->
             stream = _stream
             stream.on 'data', (data) ->
