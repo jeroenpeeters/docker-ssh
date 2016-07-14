@@ -70,6 +70,9 @@ module.exports = (container, shell) ->
           channel = accept()
           _container = docker.getContainer container
           _container.exec {Cmd: [shell, '-c', info.command], AttachStdin: true, AttachStdout: true, AttachStderr: true, Tty: false}, (err, exec) ->
+            if err
+              log.error {container: container}, 'Exec error', err
+              return closeChannel()
             exec.start {stdin: true, Tty: true}, (err, _stream) ->
               stream = _stream
               stream.on 'data', (data) ->
@@ -98,6 +101,9 @@ module.exports = (container, shell) ->
 
         _container = docker.getContainer container
         _container.exec {Cmd: [shell], AttachStdin: true, AttachStdout: true, Tty: true}, (err, exec) ->
+          if err
+            log.error {container: container}, 'Exec error', err
+            return closeChannel()
           exec.start {stdin: true, Tty: true}, (err, _stream) ->
             stream = _stream
             forwardData = false
