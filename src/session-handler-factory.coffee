@@ -28,7 +28,8 @@ module.exports = (container, shell) ->
       channel.exit(0) if channel
       channel.end() if channel
     stopTerm = ->
-      stream.end() if stream
+      stream.write 'exit\n'
+      # setTimeout (-> stream.end() if stream), 500
 
     close: -> stopTerm()
     handler: (accept, reject) ->
@@ -42,24 +43,22 @@ module.exports = (container, shell) ->
             transfer.on 'done', ->
               console.log 'scp exited'
             transfer.on 'write_file', (path, dir, name, data) ->
+              console.log 'write file', path, dir, name, data
               _container = docker.getContainer container
-              _container.exec {Cmd: ['/bin/echo', '\'', data.toString(), '\''], AttachStdin: true, AttachStdout: true, AttachStderr: true, Tty: false}, (err, exec) ->
-                console.log 'err', err
+              _container.exec {Cmd: [shell, '-c', "cat > #{path}#{name}"], AttachStdin: true, AttachStdout: true, AttachStderr: true, Tty: false}, (err, exec) ->
+                if err
+                  log.error {container: container}, 'Exec error', err
+                  return closeChannel()
                 exec.start {stdin: true, Tty: false}, (err, _stream) ->
                   console.log 'err2', err
                   stream = _stream
-
-                  stream.on 'data', (data) ->
-                    console.log '!!!xx', data
-                    #channel.write data.toString()
                   stream.on 'error', (err) ->
                     log.error {container: container}, 'Exec error', err
                     closeChannel()
                   stream.on 'end', ->
                     log.info {container: container}, 'Exec ended'
                     closeChannel()
-
-              console.log 'impl::file', path, dir, name, data
+                  stream.write data.toString()
             transfer.on 'read_file', (path, cb) ->
               cb "You requested: #{path}"
             transfer.on 'mkdir', (path, dir, name, mode) ->
@@ -100,16 +99,20 @@ module.exports = (container, shell) ->
         channel.write "#{header container}"
 
         _container = docker.getContainer container
-        _container.exec {Cmd: [shell], AttachStdin: true, AttachStdout: true, Tty: true}, (err, exec) ->
+        _container.exec {Cmd: ['env', 'TERM=linux', 'PS1=\\w $ ', shell, '--norc'], AttachStdin: true, AttachStdout: true, Tty: true}, (err, exec) ->
+          console.log 'exec!'
           if err
             log.error {container: container}, 'Exec error', err
             return closeChannel()
           exec.start {stdin: true, Tty: true}, (err, _stream) ->
+            console.log 'start!'
+            console.log err
             stream = _stream
             forwardData = false
-            setTimeout (-> forwardData = true; stream.write '\n'), 500
+            setTimeout (-> forwardData = true; stream.write '\n'), 100
+            console.log 'ERR', err if err
             stream.on 'data', (data) ->
-              if forwardData
+              #if forwardData
                 channel.write data.toString()
             stream.on 'error', (err) ->
               log.error {container: container}, 'Terminal error', err
@@ -118,14 +121,14 @@ module.exports = (container, shell) ->
               log.info {container: container}, 'Terminal exited'
               closeChannel()
 
-            stream.write 'export TERM=linux;\n'
-            stream.write 'export PS1="\\w $ ";\n\n'
+            # stream.write 'export TERM=linux;\n'
+            # stream.write 'export PS1="\\w $ ";\n\n'
 
             channel.on 'data', (data) ->
               stream.write data
             channel.on 'error', (e) ->
               log.error {container: container}, 'Channel error', e
-            channel.on 'end', ->
+            channel.on 'end', (x)->
               log.info {container: container}, 'Channel exited'
               stopTerm()
 
