@@ -130,7 +130,7 @@ by setting `AUTH_USER` and `AUTH_PASSWORD`
     $ docker run -d -p 2222:22 \
       -v /var/run/docker.sock:/var/run/docker.sock \
       -e CONTAINER=my-container -e AUTH_MECHANISM=simpleAuth \
-      -e AUTH_USER=jeroen AUTH_PASSWORD=1234 \
+      -e AUTH_USER=jeroen -e AUTH_PASSWORD=1234 \
       jeroenpeeters/docker-ssh
 
     $ ssh -p 2222 jeroen@localhost
