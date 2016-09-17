@@ -45,6 +45,7 @@ message if you whish to contribute to this project.
 - [x] HTTP API
 - [x] Web terminal
 - [ ] Customize the MOTD
+- [x] Simple user authentication; one user/password
 - [ ] Authenticate users by username and password
 - [ ] Authenticate users by username and public key
 - [ ] Secure copy implementation (SCP)
@@ -111,7 +112,7 @@ table lists the implemented and planned authentication mechanisms
 AUTH_MECHANISM    | Implemented | Description
 ------------------|-------------|--------------
 noAuth            | yes         | No authentication is performed, enter any user/password combination to logon
-simplePassword    | **no**      | Authenticate a predefined user/password, supports one user
+simpleAuth        | yes         | Authenticate a predefined user/password, supports one user
 extendedPassword  | **no**      | Authenticate a user according to a predefined lists of users and passwords
 privateKey        | **no**      | Private key authentication
 
@@ -121,8 +122,19 @@ Useful for testing, or in closed network environments such as corporate networks
 This mechanism is nevertheless **discouraged** and should be used with care! The use of this
 authentication mechanism will create an error entry in the log.
 
-## simplePassword
-No yet implemented.
+## simpleAuth
+Supports the authentication of a single user with password. Set `AUTH_MECHANISM=simpleAuth`
+to enable this authentication mechanism. The username and password is configured
+by setting `AUTH_USER` and `AUTH_PASSWORD`
+
+    $ docker run -d -p 2222:22 \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -e CONTAINER=my-container -e AUTH_MECHANISM=simpleAuth \
+      -e AUTH_USER=jeroen AUTH_PASSWORD=1234 \
+      jeroenpeeters/docker-ssh
+
+    $ ssh -p 2222 jeroen@localhost
+    $ jeroen@localhost's password: ****
 
 ## extendedPassword
 No yet implemented.
