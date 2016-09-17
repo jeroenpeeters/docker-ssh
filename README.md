@@ -46,7 +46,7 @@ message if you whish to contribute to this project.
 - [x] Web terminal
 - [ ] Customize the MOTD
 - [x] Simple user authentication; one user/password
-- [ ] Authenticate users by username and password
+- [x] Authenticate users by username and password
 - [ ] Authenticate users by username and public key
 - [ ] Secure copy implementation (SCP)
 - [ ] Secure FTP implementation (SFTP)
@@ -113,7 +113,7 @@ AUTH_MECHANISM    | Implemented | Description
 ------------------|-------------|--------------
 noAuth            | yes         | No authentication is performed, enter any user/password combination to logon
 simpleAuth        | yes         | Authenticate a predefined user/password, supports one user
-extendedPassword  | **no**      | Authenticate a user according to a predefined lists of users and passwords
+multiUser         | yes         | Authenticate a user according to a predefined lists of users and passwords
 privateKey        | **no**      | Private key authentication
 
 ## noAuth
@@ -125,7 +125,7 @@ authentication mechanism will create an error entry in the log.
 ## simpleAuth
 Supports the authentication of a single user with password. Set `AUTH_MECHANISM=simpleAuth`
 to enable this authentication mechanism. The username and password is configured
-by setting `AUTH_USER` and `AUTH_PASSWORD`
+by setting `AUTH_USER` and `AUTH_PASSWORD`.
 
     $ docker run -d -p 2222:22 \
       -v /var/run/docker.sock:/var/run/docker.sock \
@@ -136,8 +136,20 @@ by setting `AUTH_USER` and `AUTH_PASSWORD`
     $ ssh -p 2222 jeroen@localhost
     $ jeroen@localhost's password: ****
 
-## extendedPassword
-No yet implemented.
+## multiUser
+Supports the authentication of a user against a list of user:password tuples.
+Set `AUTH_MECHANISM=multiUser` to enable this authentication mechanism.
+The username:password tuples are configured by setting `AUTH_TUPLES`.
+It is a single string with semicolon (;) separated user:password pairs.
+
+    $ docker run -d -p 2222:22 \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -e CONTAINER=my-container -e AUTH_MECHANISM=multiUser \
+      -e AUTH_TUPLES="jeroen:thefather;luke:theforce" \
+      jeroenpeeters/docker-ssh
+
+    $ ssh -p 2222 luke@localhost
+$ luke@localhost's password: ****
 
 ## privateKey
 No yet implemented.
