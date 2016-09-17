@@ -149,7 +149,7 @@ It is a single string with semicolon (;) separated user:password pairs.
       jeroenpeeters/docker-ssh
 
     $ ssh -p 2222 luke@localhost
-$ luke@localhost's password: ****
+    $ luke@localhost's password: ****
 
 ## privateKey
 No yet implemented.
