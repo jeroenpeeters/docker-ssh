@@ -1,0 +1,2 @@
+## latest
+ - Added simpleAuth
