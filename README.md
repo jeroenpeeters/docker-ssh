@@ -1,4 +1,4 @@
-# Docker-SSH [![](https://badge.imagelayers.io/jeroenpeeters/docker-ssh:latest.svg)](https://imagelayers.io/?images=jeroenpeeters/docker-ssh:latest 'Get your own badge on imagelayers.io') [![Docker Stars](https://img.shields.io/docker/stars/jeroenpeeters/docker-ssh.svg?style=flat-square)](https://hub.docker.com/r/jeroenpeeters/docker-ssh/) [![Docker Stars](https://img.shields.io/docker/pulls/jeroenpeeters/docker-ssh.svg?style=flat-square)](https://hub.docker.com/r/jeroenpeeters/docker-ssh/)
+# Docker-SSH [![Docker Stars](https://img.shields.io/docker/stars/jeroenpeeters/docker-ssh.svg?style=flat-square)](https://hub.docker.com/r/jeroenpeeters/docker-ssh/) [![Docker Stars](https://img.shields.io/docker/pulls/jeroenpeeters/docker-ssh.svg?style=flat-square)](https://hub.docker.com/r/jeroenpeeters/docker-ssh/)
 SSH Server for Docker containers  ~ Because every container should be accessible.
 
 Want to SSH into your container right away? Here you go:
