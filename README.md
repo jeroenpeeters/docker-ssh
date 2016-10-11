@@ -50,6 +50,7 @@ message if you whish to contribute to this project.
 - [x] Authenticate users by username and public key
 - [ ] Secure copy implementation (SCP)
 - [ ] Secure FTP implementation (SFTP)
+- [ ] Access multiple containers
 
 # Add SSH capabilities to any container!
 Let's assume you have a running container with name 'web-server1'. Run the following command to start Docker-SSH:
