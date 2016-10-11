@@ -166,10 +166,6 @@ The name of the authorized_keys file is configured by setting `AUTHORIZED_KEYS`.
       jeroenpeeters/docker-ssh
 
     $ ssh -p 2222 luke@localhost
-    
-     ###############################################################
-     ## Docker SSH ~ Because every container should be accessible ##
-     ###############################################################
 
 # Server Identity and Security
 The SSH server needs an RSA/EC private key in order to secure the connection and identify itself to clients.
