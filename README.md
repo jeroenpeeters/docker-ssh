@@ -47,7 +47,7 @@ message if you whish to contribute to this project.
 - [ ] Customize the MOTD
 - [x] Simple user authentication; one user/password
 - [x] Authenticate users by username and password
-- [ ] Authenticate users by username and public key
+- [x] Authenticate users by username and public key
 - [ ] Secure copy implementation (SCP)
 - [ ] Secure FTP implementation (SFTP)
 
@@ -114,7 +114,7 @@ AUTH_MECHANISM    | Implemented | Description
 noAuth            | yes         | No authentication is performed, enter any user/password combination to logon
 simpleAuth        | yes         | Authenticate a predefined user/password, supports one user
 multiUser         | yes         | Authenticate a user according to a predefined lists of users and passwords
-privateKey        | **no**      | Private key authentication
+publicKey         | yes         | Public key authentication
 
 ## noAuth
 No authentication is performed. Any user/password combination is accepted by the server.
@@ -151,8 +151,24 @@ It is a single string with semicolon (;) separated user:password pairs.
     $ ssh -p 2222 luke@localhost
     $ luke@localhost's password: ****
 
-## privateKey
-No yet implemented.
+## publicKey
+Supports the authentication of a user against an authorized_keys file containing a list of public keys.
+Set `AUTH_MECHANISM=publicKey` to enable this authentication mechanism.
+The name of the authorized_keys file is configured by setting `AUTHORIZED_KEYS`.
+
+    $ cat ~/.ssh/id_rsa.pub > authorized_keys
+    $ docker run -d -p 2222:22 \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -v ./authorized_keys:/authorized_keys
+      -e CONTAINER=my-container -e AUTH_MECHANISM=publicKey \
+      -e AUTHORIZED_KEYS="/authorized_keys" \
+      jeroenpeeters/docker-ssh
+
+    $ ssh -p 2222 luke@localhost
+    
+     ###############################################################
+     ## Docker SSH ~ Because every container should be accessible ##
+     ###############################################################
 
 # Server Identity and Security
 The SSH server needs an RSA/EC private key in order to secure the connection and identify itself to clients.
