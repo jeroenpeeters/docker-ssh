@@ -1,4 +1,4 @@
-# Docker-SSH [![](https://badge.imagelayers.io/jeroenpeeters/docker-ssh:latest.svg)](https://imagelayers.io/?images=jeroenpeeters/docker-ssh:latest 'Get your own badge on imagelayers.io') [![Docker Stars](https://img.shields.io/docker/stars/jeroenpeeters/docker-ssh.svg?style=flat-square)](https://hub.docker.com/r/jeroenpeeters/docker-ssh/) [![Docker Stars](https://img.shields.io/docker/pulls/jeroenpeeters/docker-ssh.svg?style=flat-square)](https://hub.docker.com/r/jeroenpeeters/docker-ssh/)
+# Docker-SSH [![Docker Stars](https://img.shields.io/docker/stars/jeroenpeeters/docker-ssh.svg?style=flat-square)](https://hub.docker.com/r/jeroenpeeters/docker-ssh/) [![Docker Stars](https://img.shields.io/docker/pulls/jeroenpeeters/docker-ssh.svg?style=flat-square)](https://hub.docker.com/r/jeroenpeeters/docker-ssh/)
 SSH Server for Docker containers  ~ Because every container should be accessible.
 
 Want to SSH into your container right away? Here you go:
@@ -45,10 +45,12 @@ message if you whish to contribute to this project.
 - [x] HTTP API
 - [x] Web terminal
 - [ ] Customize the MOTD
-- [ ] Authenticate users by username and password
-- [ ] Authenticate users by username and public key
+- [x] Simple user authentication; one user/password
+- [x] Authenticate users by username and password
+- [x] Authenticate users by username and public key
 - [ ] Secure copy implementation (SCP)
 - [ ] Secure FTP implementation (SFTP)
+- [ ] Access multiple containers
 
 # Add SSH capabilities to any container!
 Let's assume you have a running container with name 'web-server1'. Run the following command to start Docker-SSH:
@@ -111,9 +113,9 @@ table lists the implemented and planned authentication mechanisms
 AUTH_MECHANISM    | Implemented | Description
 ------------------|-------------|--------------
 noAuth            | yes         | No authentication is performed, enter any user/password combination to logon
-simplePassword    | **no**      | Authenticate a predefined user/password, supports one user
-extendedPassword  | **no**      | Authenticate a user according to a predefined lists of users and passwords
-privateKey        | **no**      | Private key authentication
+simpleAuth        | yes         | Authenticate a predefined user/password, supports one user
+multiUser         | yes         | Authenticate a user according to a predefined lists of users and passwords
+publicKey         | yes         | Public key authentication
 
 ## noAuth
 No authentication is performed. Any user/password combination is accepted by the server.
@@ -121,14 +123,49 @@ Useful for testing, or in closed network environments such as corporate networks
 This mechanism is nevertheless **discouraged** and should be used with care! The use of this
 authentication mechanism will create an error entry in the log.
 
-## simplePassword
-No yet implemented.
+## simpleAuth
+Supports the authentication of a single user with password. Set `AUTH_MECHANISM=simpleAuth`
+to enable this authentication mechanism. The username and password is configured
+by setting `AUTH_USER` and `AUTH_PASSWORD`.
 
-## extendedPassword
-No yet implemented.
+    $ docker run -d -p 2222:22 \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -e CONTAINER=my-container -e AUTH_MECHANISM=simpleAuth \
+      -e AUTH_USER=jeroen -e AUTH_PASSWORD=1234 \
+      jeroenpeeters/docker-ssh
 
-## privateKey
-No yet implemented.
+    $ ssh -p 2222 jeroen@localhost
+    $ jeroen@localhost's password: ****
+
+## multiUser
+Supports the authentication of a user against a list of user:password tuples.
+Set `AUTH_MECHANISM=multiUser` to enable this authentication mechanism.
+The username:password tuples are configured by setting `AUTH_TUPLES`.
+It is a single string with semicolon (;) separated user:password pairs.
+
+    $ docker run -d -p 2222:22 \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -e CONTAINER=my-container -e AUTH_MECHANISM=multiUser \
+      -e AUTH_TUPLES="jeroen:thefather;luke:theforce" \
+      jeroenpeeters/docker-ssh
+
+    $ ssh -p 2222 luke@localhost
+    $ luke@localhost's password: ****
+
+## publicKey
+Supports the authentication of a user against an authorized_keys file containing a list of public keys.
+Set `AUTH_MECHANISM=publicKey` to enable this authentication mechanism.
+The name of the authorized_keys file is configured by setting `AUTHORIZED_KEYS`.
+
+    $ cat ~/.ssh/id_rsa.pub > authorized_keys
+    $ docker run -d -p 2222:22 \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -v ./authorized_keys:/authorized_keys
+      -e CONTAINER=my-container -e AUTH_MECHANISM=publicKey \
+      -e AUTHORIZED_KEYS="/authorized_keys" \
+      jeroenpeeters/docker-ssh
+
+    $ ssh -p 2222 luke@localhost
 
 # Server Identity and Security
 The SSH server needs an RSA/EC private key in order to secure the connection and identify itself to clients.
