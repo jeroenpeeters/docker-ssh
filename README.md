@@ -162,7 +162,7 @@ The name of the authorized_keys file is configured by setting `AUTHORIZED_KEYS`.
       -v /var/run/docker.sock:/var/run/docker.sock \
       -v ./authorized_keys:/authorized_keys
       -e CONTAINER=my-container -e AUTH_MECHANISM=publicKey \
-      -e AUTHORIZED_KEYS="/authorized_keys" \
+      -e AUTHORIZED_KEYS=/authorized_keys \
       jeroenpeeters/docker-ssh
 
     $ ssh -p 2222 luke@localhost
