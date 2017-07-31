@@ -48,6 +48,7 @@ message if you whish to contribute to this project.
 - [x] Simple user authentication; one user/password
 - [x] Authenticate users by username and password
 - [x] Authenticate users by username and public key
+- [x] Run commands as specific user
 - [ ] Secure copy implementation (SCP)
 - [ ] Secure FTP implementation (SFTP)
 - [ ] Access multiple containers
@@ -187,6 +188,7 @@ KEYPATH        | ./id_rsa | path to a private key to use as server identity
 PORT           | 22       | ssh server listens on this port
 HTTP_ENABLED   | true     | enable/disable the web terminal
 HTTP_PORT      | 8022     | web terminal listens on this port
+SHELL_USER     | root     | Run commands as this user *(Note: independant from authentication user)*
 
 # Credits
 I couldn't have created Docker-SSH without the following great Node packages! Many thanks go to the authors of:
