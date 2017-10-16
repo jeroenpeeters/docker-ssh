@@ -43,4 +43,4 @@ module.exports = (ctx) ->
       log.info {user: ctx.username}, 'No signature, the client is just checking validity of given public key'
       return ctx.accept();
 
-  ctx.reject();
+  ctx.reject(['publickey']);
