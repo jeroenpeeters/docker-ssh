@@ -168,6 +168,13 @@ The name of the authorized_keys file is configured by setting `AUTHORIZED_KEYS`.
 
     $ ssh -p 2222 luke@localhost
 
+# SHELL_USER
+SSH authentication is provided by Docker-SSH and runs independently from the
+container. Therefore the shell user and authentication user also operate independently.
+By default the shell user will be the user from the USER directive in the Docker Image.
+If you whish to override this you can specify `SHELL_USER` as an environment variable
+to Docker-SSH. **Note: This user MUST already exist in the container, otherwise Docker-SSH will fail.**
+
 # Server Identity and Security
 The SSH server needs an RSA/EC private key in order to secure the connection and identify itself to clients.
 The Docker-SSH container comes with a default RSA key that will be used. If you want, you can provide your own
@@ -188,7 +195,7 @@ KEYPATH        | ./id_rsa | path to a private key to use as server identity
 PORT           | 22       | ssh server listens on this port
 HTTP_ENABLED   | true     | enable/disable the web terminal
 HTTP_PORT      | 8022     | web terminal listens on this port
-SHELL_USER     | root     | Run commands as this user *(Note: independant from authentication user)*
+SHELL_USER     | root     | Run commands as this user *(Note: independent from authentication user)*
 
 # Credits
 I couldn't have created Docker-SSH without the following great Node packages! Many thanks go to the authors of:
