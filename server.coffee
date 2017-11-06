@@ -11,7 +11,7 @@ httpPort        = process.env.HTTP_PORT or 80
 httpEnabled     = process.env.HTTP_ENABLED or true
 ip              = process.env.IP or '0.0.0.0'
 keypath         = process.env.KEYPATH
-container       = process.env.CONTAINER
+filters         = process.env.FILTERS
 shell           = process.env.CONTAINER_SHELL
 shell_user      = process.env.SHELL_USER
 authMechanism   = process.env.AUTH_MECHANISM
@@ -23,7 +23,7 @@ exitOnConfigError = (errorMessage) ->
   console.error "Configuration error: #{errorMessage}"
   process.exit(1)
 
-exitOnConfigError 'No CONTAINER specified'                    unless container
+exitOnConfigError 'No FILTERS specified'                      unless filters
 exitOnConfigError 'No KEYPATH specified'                      unless keypath
 exitOnConfigError 'No CONTAINER_SHELL specified'              unless shell
 exitOnConfigError 'No AUTH_MECHANISM specified'               unless authMechanism
@@ -32,7 +32,7 @@ exitOnConfigError "Unknown AUTH_MECHANISM: #{authMechanism}"  unless authenticat
 options =
   privateKey: fs.readFileSync keypath
 
-sessionFactory = handlerFactory container, shell, shell_user
+sessionFactory = handlerFactory filters, shell, shell_user
 
 sshServer = new ssh2.Server options, (client, info) ->
   session = sessionFactory.instance()
