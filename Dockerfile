@@ -2,8 +2,12 @@ FROM node:9-onbuild as build
 
 CMD ["npm", "start"]
 
-FROM node:9-alpine
+FROM alpine:3.6
 COPY --from=build /usr/src/app /usr/src/app
+
+RUN apk update \
+  && apk add nodejs nodejs-npm \
+  && rm -rf /tmp/* /var/cache/apk/* /root/.npm /root/.node-gyp
 
 # Connect to container with name/id
 ENV CONTAINER=
