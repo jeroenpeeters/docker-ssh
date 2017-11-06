@@ -194,3 +194,4 @@ SHELL_USER     | root     | Run commands as this user *(Note: independant from a
 I couldn't have created Docker-SSH without the following great Node packages! Many thanks go to the authors of:
 
 - [SSH2](https://github.com/mscdex/ssh2)
+- [Dockerode](https://github.com/apocas/dockerode)
