@@ -14,7 +14,7 @@ header = (container) ->
   " ###############################################################\r\n" +
   "\r\n"
 
-module.exports = (container, shell) ->
+module.exports = (container, shell, shell_user) ->
   instance: ->
     session = null
     channel = null
@@ -37,7 +37,7 @@ module.exports = (container, shell) ->
         log.info {container: container, command: info.command}, 'Exec'
         channel = accept()
         _container = docker.getContainer container
-        _container.exec {Cmd: [shell, '-c', info.command], AttachStdin: true, AttachStdout: true, AttachStderr: true, Tty: false}, (err, exec) ->
+        _container.exec {User: shell_user, Cmd: [shell, '-c', info.command], AttachStdin: true, AttachStdout: true, AttachStderr: true, Tty: false}, (err, exec) ->
           if err
             log.error {container: container}, 'Exec error', err
             return closeChannel()
@@ -68,7 +68,7 @@ module.exports = (container, shell) ->
         channel.write "#{header container}"
 
         _container = docker.getContainer container
-        _container.exec {Cmd: [shell], AttachStdin: true, AttachStdout: true, Tty: true}, (err, exec) ->
+        _container.exec {User: shell_user, Cmd: [shell], AttachStdin: true, AttachStdout: true, Tty: true}, (err, exec) ->
           if err
             log.error {container: container}, 'Exec error', err
             return closeChannel()
