@@ -36,8 +36,15 @@ module.exports = (container, shell, shell_user) ->
       session.once 'exec', (accept, reject, info) ->
         log.info {container: container, command: info.command}, 'Exec'
         channel = accept()
+        execOpts =
+          Cmd: [shell, '-c', info.command]
+          AttachStdin: true
+          AttachStdout: true
+          AttachStderr: true
+          Tty: false
+        execOpts['User'] = shell_user if shell_user
         _container = docker.getContainer container
-        _container.exec {User: shell_user, Cmd: [shell, '-c', info.command], AttachStdin: true, AttachStdout: true, AttachStderr: true, Tty: false}, (err, exec) ->
+        _container.exec execOpts, (err, exec) ->
           if err
             log.error {container: container}, 'Exec error', err
             return closeChannel()
@@ -66,9 +73,15 @@ module.exports = (container, shell, shell_user) ->
         log.info {container: container}, 'Opening shell'
         channel = accept()
         channel.write "#{header container}"
-
+        execOpts =
+          Cmd: [shell]
+          AttachStdin: true
+          AttachStdout: true
+          AttachStderr: true
+          Tty: true
+        execOpts['User'] = shell_user if shell_user
         _container = docker.getContainer container
-        _container.exec {User: shell_user, Cmd: [shell], AttachStdin: true, AttachStdout: true, Tty: true}, (err, exec) ->
+        _container.exec execOpts, (err, exec) ->
           if err
             log.error {container: container}, 'Exec error', err
             return closeChannel()
