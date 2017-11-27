@@ -14,7 +14,7 @@ header = (container) ->
   " ###############################################################\r\n" +
   "\r\n"
 
-module.exports = (container, shell, shell_user) ->
+module.exports = (filters, shell, shell_user) ->
   instance: ->
     session = null
     channel = null
@@ -33,91 +33,96 @@ module.exports = (container, shell, shell_user) ->
       session = accept()
       termInfo = null
 
-      session.once 'exec', (accept, reject, info) ->
-        log.info {container: container, command: info.command}, 'Exec'
-        channel = accept()
-        execOpts =
-          Cmd: [shell, '-c', info.command]
-          AttachStdin: true
-          AttachStdout: true
-          AttachStderr: true
-          Tty: false
-        execOpts['User'] = shell_user if shell_user
-        _container = docker.getContainer container
-        _container.exec execOpts, (err, exec) ->
-          if err
-            log.error {container: container}, 'Exec error', err
-            return closeChannel()
-          exec.start {stdin: true, Tty: true}, (err, _stream) ->
-            stream = _stream
-            stream.on 'data', (data) ->
-              channel.write data.toString()
-            stream.on 'error', (err) ->
-              log.error {container: container}, 'Exec error', err
-              closeChannel()
-            stream.on 'end', ->
-              log.info {container: container}, 'Exec ended'
-              closeChannel()
-            channel.on 'data', (data) ->
-              stream.write data
-            channel.on 'error', (e) ->
-              log.error {container: container}, 'Channel error', e
-            channel.on 'end', ->
-              log.info {container: container}, 'Channel exited'
-              stopTerm()
+      _container = null
 
-      session.on 'err', (err) ->
-        log.error {container: container}, err
+      docker.listContainers {filters:filters}, (err, containers) ->
+        containerInfo = containers?[0]
+        _containerName = containerInfo?.Names?[0]
+        _container = docker.getContainer containerInfo?.Id
 
-      session.on 'shell', (accept, reject) ->
-        log.info {container: container}, 'Opening shell'
-        channel = accept()
-        channel.write "#{header container}"
-        execOpts =
-          Cmd: [shell]
-          AttachStdin: true
-          AttachStdout: true
-          AttachStderr: true
-          Tty: true
-        execOpts['User'] = shell_user if shell_user
-        _container = docker.getContainer container
-        _container.exec execOpts, (err, exec) ->
-          if err
-            log.error {container: container}, 'Exec error', err
-            return closeChannel()
-          exec.start {stdin: true, Tty: true}, (err, _stream) ->
-            stream = _stream
-            forwardData = false
-            setTimeout (-> forwardData = true; stream.write '\n'), 500
-            stream.on 'data', (data) ->
-              if forwardData
+        session.once 'exec', (accept, reject, info) ->
+          log.info {container: _containerName, command: info.command}, 'Exec'
+          channel = accept()
+          execOpts =
+            Cmd: [shell, '-c', info.command]
+            AttachStdin: true
+            AttachStdout: true
+            AttachStderr: true
+            Tty: false
+          execOpts['User'] = shell_user if shell_user
+          _container.exec execOpts, (err, exec) ->
+            if err
+              log.error {container: _containerName}, 'Exec error', err
+              return closeChannel()
+            exec.start {stdin: true, Tty: true}, (err, _stream) ->
+              stream = _stream
+              stream.on 'data', (data) ->
                 channel.write data.toString()
-            stream.on 'error', (err) ->
-              log.error {container: container}, 'Terminal error', err
-              closeChannel()
-            stream.on 'end', ->
-              log.info {container: container}, 'Terminal exited'
-              closeChannel()
+              stream.on 'error', (err) ->
+                log.error {container: _containerName}, 'Exec error', err
+                closeChannel()
+              stream.on 'end', ->
+                log.info {container: _containerName}, 'Exec ended'
+                closeChannel()
+              channel.on 'data', (data) ->
+                stream.write data
+              channel.on 'error', (e) ->
+                log.error {container: _containerName}, 'Channel error', e
+              channel.on 'end', ->
+                log.info {container: _containerName}, 'Channel exited'
+                stopTerm()
 
-            stream.write 'export TERM=linux;\n'
-            stream.write 'export PS1="\\w $ ";\n\n'
+        session.on 'err', (err) ->
+          log.error {container: _containerName}, err
 
-            channel.on 'data', (data) ->
-              stream.write data
-            channel.on 'error', (e) ->
-              log.error {container: container}, 'Channel error', e
-            channel.on 'end', ->
-              log.info {container: container}, 'Channel exited'
-              stopTerm()
+        session.on 'shell', (accept, reject) ->
+          log.info {container: _containerName}, 'Opening shell'
+          channel = accept()
+          channel.write "#{header _containerName}"
+          execOpts =
+            Cmd: [shell]
+            AttachStdin: true
+            AttachStdout: true
+            AttachStderr: true
+            Tty: true
+          execOpts['User'] = shell_user if shell_user
+          _container.exec execOpts, (err, exec) ->
+            if err
+              log.error {container: _containerName}, 'Exec error', err
+              return closeChannel()
+            exec.start {stdin: true, Tty: true}, (err, _stream) ->
+              stream = _stream
+              forwardData = false
+              setTimeout (-> forwardData = true; stream.write '\n'), 500
+              stream.on 'data', (data) ->
+                if forwardData
+                  channel.write data.toString()
+              stream.on 'error', (err) ->
+                log.error {container: _containerName}, 'Terminal error', err
+                closeChannel()
+              stream.on 'end', ->
+                log.info {container: _containerName}, 'Terminal exited'
+                closeChannel()
 
-            resizeTerm = (termInfo) ->
-              if termInfo then exec.resize {h: termInfo.rows, w: termInfo.cols}, -> undefined
-            resizeTerm termInfo # initially set the current size of the terminal
+              stream.write 'export TERM=linux;\n'
+              stream.write 'export PS1="\\w $ ";\n\n'
 
-      session.on 'pty', (accept, reject, info) ->
-        x = accept()
-        termInfo = info
+              channel.on 'data', (data) ->
+                stream.write data
+              channel.on 'error', (e) ->
+                log.error {container: _containerName}, 'Channel error', e
+              channel.on 'end', ->
+                log.info {container: _containerName}, 'Channel exited'
+                stopTerm()
 
-      session.on 'window-change', (accept, reject, info) ->
-        log.info {container: container}, 'window-change', info
-        resizeTerm info
+              resizeTerm = (termInfo) ->
+                if termInfo then exec.resize {h: termInfo.rows, w: termInfo.cols}, -> undefined
+              resizeTerm termInfo # initially set the current size of the terminal
+
+        session.on 'pty', (accept, reject, info) ->
+          x = accept()
+          termInfo = info
+
+        session.on 'window-change', (accept, reject, info) ->
+          log.info {container: _containerName}, 'window-change', info
+          resizeTerm info

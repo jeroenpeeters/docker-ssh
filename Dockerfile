@@ -1,16 +1,13 @@
-FROM gliderlabs/alpine
+FROM node:9-onbuild as build
 
-WORKDIR /src
-ADD . .
+CMD ["npm", "start"]
 
-RUN apk --update add python make g++ nodejs \
-  && npm install \
-  && apk del make gcc g++ python \
+FROM alpine:3.6
+COPY --from=build /usr/src/app /usr/src/app
+
+RUN apk update \
+  && apk add nodejs nodejs-npm \
   && rm -rf /tmp/* /var/cache/apk/* /root/.npm /root/.node-gyp
-
-
-# make coffee executable
-RUN chmod +x ./node_modules/coffee-script/bin/coffee
 
 # Connect to container with name/id
 ENV CONTAINER=
@@ -32,4 +29,5 @@ ENV HTTP_PORT=8022
 
 EXPOSE 22 8022
 
+WORKDIR /usr/src/app
 CMD ["npm", "start"]

@@ -11,6 +11,7 @@ httpPort        = process.env.HTTP_PORT or 80
 httpEnabled     = process.env.HTTP_ENABLED or true
 ip              = process.env.IP or '0.0.0.0'
 keypath         = process.env.KEYPATH
+filters         = process.env.FILTERS
 container       = process.env.CONTAINER
 shell           = process.env.CONTAINER_SHELL
 shell_user      = process.env.SHELL_USER
@@ -23,7 +24,7 @@ exitOnConfigError = (errorMessage) ->
   console.error "Configuration error: #{errorMessage}"
   process.exit(1)
 
-exitOnConfigError 'No CONTAINER specified'                    unless container
+exitOnConfigError 'No FILTERS specified'                      unless filters or container
 exitOnConfigError 'No KEYPATH specified'                      unless keypath
 exitOnConfigError 'No CONTAINER_SHELL specified'              unless shell
 exitOnConfigError 'No AUTH_MECHANISM specified'               unless authMechanism
@@ -32,7 +33,11 @@ exitOnConfigError "Unknown AUTH_MECHANISM: #{authMechanism}"  unless authenticat
 options =
   privateKey: fs.readFileSync keypath
 
-sessionFactory = handlerFactory container, shell, shell_user
+# support CONTAINER parameter for backwards compatibility
+filters = {"name":[container]} if (not filters) and container
+log.info filter: filters, 'Docker filter'
+
+sessionFactory = handlerFactory filters, shell, shell_user
 
 sshServer = new ssh2.Server options, (client, info) ->
   session = sessionFactory.instance()
