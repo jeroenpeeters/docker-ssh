@@ -1,0 +1,31 @@
+machine:
+  services:
+    - docker
+
+dependencies:
+  override:
+    - docker build -t docker-ssh .
+
+test:
+  override:
+    - echo "no tests!"
+
+deployment:
+  tags:
+    tag: /^[0-9]+\.[0-9]+\.[0-9]+$/
+    commands:
+      - docker tag docker-ssh jeroenpeeters/docker-ssh:${CIRCLE_TAG}
+      - MAJOR_VERSION=${CIRCLE_TAG/.*}; docker tag jeroenpeeters/docker-ssh:${CIRCLE_TAG} jeroenpeeters/docker-ssh:${MAJOR_VERSION}
+      - MINOR_VERSION=${CIRCLE_TAG%.*}; docker tag jeroenpeeters/docker-ssh:${CIRCLE_TAG} jeroenpeeters/docker-ssh:${MINOR_VERSION}
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+      - docker push jeroenpeeters/docker-ssh
+      - docker push jeroenpeeters/docker-ssh:${CIRCLE_TAG}
+      - docker push jeroenpeeters/docker-ssh:${MINOR_VERSION}
+      - docker push jeroenpeeters/docker-ssh:${MAJOR_VERSION}
+
+  features:
+    branch: /^.*$/
+    commands:
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+      - docker tag docker-ssh jeroenpeeters/docker-ssh:${CIRCLE_BRANCH}
+      - docker push jeroenpeeters/docker-ssh:${CIRCLE_BRANCH}
