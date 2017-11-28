@@ -5,7 +5,7 @@ Want to SSH into your container right away? Here you go:
 
     $ docker run -d -p 2222:22 \
       -v /var/run/docker.sock:/var/run/docker.sock \
-      -e FILTERS={\"name\":[\"my-container\"]} -e AUTH_MECHANISM=noAuth \
+      -e FILTERS={\"name\":[\"^/my-container$\"]} -e AUTH_MECHANISM=noAuth \
       jeroenpeeters/docker-ssh
 
     $ ssh -p 2222 localhost
@@ -57,7 +57,7 @@ message if you whish to contribute to this project.
 # Add SSH capabilities to any container!
 Let's assume you have a running container with name 'web-server1'. Run the following command to start Docker-SSH:
 
-    docker run -e FILTERS={\"name\":[\"web-server-1\"]} -e AUTH_MECHANISM=noAuth \
+    docker run -e FILTERS={\"name\":[\"^/web-server-1$\"]} -e AUTH_MECHANISM=noAuth \
       --name sshd-web-server1 -p 2222:22  --rm \
       -v /var/run/docker.sock:/var/run/docker.sock \
       jeroenpeeters/docker-ssh
@@ -132,7 +132,7 @@ by setting `AUTH_USER` and `AUTH_PASSWORD`.
 
     $ docker run -d -p 2222:22 \
       -v /var/run/docker.sock:/var/run/docker.sock \
-      -e FILTERS={\"name\":[\"my-container\"]} -e AUTH_MECHANISM=simpleAuth \
+      -e FILTERS={\"name\":[\"^/my-container$\"]} -e AUTH_MECHANISM=simpleAuth \
       -e AUTH_USER=jeroen -e AUTH_PASSWORD=1234 \
       jeroenpeeters/docker-ssh
 
@@ -147,7 +147,7 @@ It is a single string with semicolon (;) separated user:password pairs.
 
     $ docker run -d -p 2222:22 \
       -v /var/run/docker.sock:/var/run/docker.sock \
-      -e FILTERS={\"name\":[\"my-container\"]} -e AUTH_MECHANISM=multiUser \
+      -e FILTERS={\"name\":[\"^/my-container$\"]} -e AUTH_MECHANISM=multiUser \
       -e AUTH_TUPLES="jeroen:thefather;luke:theforce" \
       jeroenpeeters/docker-ssh
 
@@ -163,7 +163,7 @@ The name of the authorized_keys file is configured by setting `AUTHORIZED_KEYS`.
     $ docker run -d -p 2222:22 \
       -v /var/run/docker.sock:/var/run/docker.sock \
       -v ./authorized_keys:/authorized_keys
-      -e FILTERS={\"name\":[\"my-container\"]} -e AUTH_MECHANISM=publicKey \
+      -e FILTERS={\"name\":[\"^/my-container$\"]} -e AUTH_MECHANISM=publicKey \
       -e AUTHORIZED_KEYS=/authorized_keys \
       jeroenpeeters/docker-ssh
 
@@ -181,6 +181,11 @@ Docker-SSH uses the filter argument of `docker ps` to target a specific containe
 that the filter matches the intended target container. If the filter matches multiple containers, the first
 one will be used. See [https://docs.docker.com/engine/api/v1.33/#operation/ContainerList](https://docs.docker.com/engine/api/v1.33/#operation/ContainerList). For backwards compatibility the `CONTAINER` 
 environment variable passed to Docker-SSH is now implemented as a filter on container name.
+
+Please note that the name filter does a partial match. You should use a regular expression to exactly match a container name.
+See one of the examples above for a demonstration of an exact name match using the Docker filters. 
+
+
 
 # Server Identity and Security
 The SSH server needs an RSA/EC private key in order to secure the connection and identify itself to clients.
