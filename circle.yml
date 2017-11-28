@@ -2,6 +2,7 @@ machine:
   image: circleci/classic:edge
   services:
     - docker
+    - setup_remote_docker
 
 dependencies:
   override:
