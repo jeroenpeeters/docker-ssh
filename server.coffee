@@ -34,7 +34,10 @@ options =
   privateKey: fs.readFileSync keypath
 
 # support CONTAINER parameter for backwards compatibility
-filters = {"name":[container]} if (not filters) and container
+# Apparently the name filter also matches on partial names
+# It turns out the name filter accepts a regular expression to do an exact match
+# See: https://forums.docker.com/t/how-to-filter-docker-ps-by-exact-name/2880
+filters = {"name":["^/#{container}$"]} if (not filters) and container
 log.info filter: filters, 'Docker filter'
 
 sessionFactory = handlerFactory filters, shell, shell_user
