@@ -200,7 +200,7 @@ argument in order to know for which container to provide SSH. Mounting the Docke
 
 Argument       | Default  | Description
 ---------------|----------|------------------------------------------------------
-FILTER         | None     | Docker filter to target a container
+FILTERS        | None     | Docker filter to target a container
 CONTAINER      | None     | *name* of a running container. **deprecated**, use FILTER
 CONTAINER_SHELL| bash     | path to a shell.
 AUTH_MECHANISM | None     | name of the authentication mechanism, see [User Authentication](#user-authentication)
